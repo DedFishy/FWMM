@@ -1,4 +1,4 @@
-from matrix import Matrix
+from matrix_connector import Matrix
 from detect import get_active_ports
 import sys
 import random

@@ -1,5 +1,6 @@
 from tkinter import Canvas
 from util import from_rgb
+from matrix import Matrix
 
 WIDTH = 9
 HEIGHT = 34
@@ -24,3 +25,13 @@ class Matrix(Canvas):
             (x+1)*self.matrix_scale, (y+1)*self.matrix_scale,
             fill=color_value
         )
+
+    def render_matrix(self, matrix: Matrix):
+        x = 0
+        y = 0
+        for row in matrix.matrix:
+            for column in row:
+                self.draw_led(x, y, column)
+                x += 1
+            y += 1
+            x = 0
