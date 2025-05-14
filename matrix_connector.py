@@ -1,4 +1,5 @@
 import serial
+from matrix import Matrix
 
 COMMANDS = {
    "brightness": 0x00,
@@ -62,8 +63,11 @@ class MatrixConnector:
    MAGIC_BYTE_A = 0x32
    MAGIC_BYTE_B = 0xAC
 
-   def __init__(self, port: str = None):
+   def __init__(self, matrix, port: str = None):
      if port: self.PORT = port
+
+     self.matrix = matrix
+
      self.connect()
      
    def connect(self, port: str = None):
@@ -140,6 +144,7 @@ class MatrixConnector:
       self.send_command(COMMANDS["flushcols"], [])
 
    def start_game(self, game: int):
+      
       self.send_command(COMMANDS["startgame"], [game])
 
    def send_game_command(self, command: int):
@@ -173,6 +178,17 @@ class MatrixConnector:
    
    def get_fw_version(self):
       return self.send_command(COMMANDS["version"], [], True)
+   
+   def _stage_matrix_column(self, column):
+      self.stage_column(column, self.matrix.get_column_values(column))
+
+   def _stage_whole_matrix(self):
+      for column in range(0, 9):
+         self._stage_matrix_column(column)
+   
+   def flush_matrix(self):
+      self._stage_whole_matrix()
+      self.flush_columns()
    
 
 # Go to sleep and check the status
