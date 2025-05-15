@@ -1,5 +1,4 @@
-WIDTH = 9
-HEIGHT = 34
+from const import WIDTH, HEIGHT
 
 class Matrix:
     def __init__(self, color=0):

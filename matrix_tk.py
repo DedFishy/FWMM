@@ -1,15 +1,13 @@
 from tkinter import Canvas
 from util import from_rgb
 from matrix import Matrix
-
-WIDTH = 9
-HEIGHT = 34
+from const import WIDTH, HEIGHT
 
 ON = ""
 
 class MatrixTk(Canvas):
     def __init__(self, parent, matrix, scale=5):
-        Canvas.__init__(self, parent, width=scale*WIDTH, height=scale*HEIGHT, bg="#000000")
+        Canvas.__init__(self, parent, width=scale*WIDTH, height=scale*HEIGHT, bg="#000000", border=0)
         print(scale * WIDTH, scale * HEIGHT)
 
         self.matrix_scale = scale

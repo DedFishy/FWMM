@@ -1,0 +1,2 @@
+WIDTH = 9
+HEIGHT = 34
