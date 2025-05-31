@@ -68,7 +68,10 @@ class MatrixConnector:
 
      self.matrix = matrix
 
-     self.connect()
+   def is_connected(self):
+      if not self.CONNECTION:
+         return False
+      return self.CONNECTION.is_open
      
    def connect(self, port: str = None):
       self.CONNECTION = serial.Serial(
