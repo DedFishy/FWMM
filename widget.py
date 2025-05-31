@@ -1,11 +1,9 @@
-from widget import Widget as WidgetBase
-
-class Widget(WidgetBase):
-    name = "Rectangle of Glory"
-    default_size = [5, 5]
+class Widget:
+    name = None
+    default_size = None
     max_size = None
     min_size = None
-    desired_spf = 60
+    desired_spf = None
 
     current_size = default_size
     def get_frame(self):

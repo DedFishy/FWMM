@@ -5,6 +5,7 @@ from const import WIDTH, HEIGHT
 from matrix import Matrix
 from matrix_connector import MatrixConnector
 from widget_manager import WidgetManager
+from matrix_widget_renderer import MatrixWidgetRenderer
 
 import random
 
@@ -15,6 +16,7 @@ matrix_rep = Matrix()
 matrix_connector = MatrixConnector(matrix_rep)
 
 widget_manager = WidgetManager()
+widget_renderer = MatrixWidgetRenderer(matrix_rep)
 
 def save_callback():
     print("Save Clicked")
@@ -61,6 +63,11 @@ def load_widget_layout(sender, app_data):
     if selected_widget_file_path:
         dpg.set_value("loaded_widget_layout", selected_widget_file_name)
 
+def create_widget(widget):
+    print(widget)
+    widget_renderer.render_widget(widget_manager.widgets[widget](), (0, 0), None)
+    matrix_connector.flush_matrix()
+
 with dpg.file_dialog(
     directory_selector=False, modal=True, show=False, callback=load_widget_layout, tag="widget_layout_file_selector", width=700 ,height=400):
     dpg.add_file_extension("FWMM Widget Layout (.mmw){.mmw}")
@@ -86,7 +93,9 @@ with dpg.window(label="Matrix", tag="matrix", no_close=True, autosize=True):
 
 with dpg.window(label="Widgets", tag="widgets", no_close=True, autosize=True):
     for widget in widget_manager.widgets.keys():
-        dpg.add_button(widget)
+        widget_name = widget_manager.widgets[widget].name
+        dpg.add_button(label=widget_name, callback=lambda: create_widget(widget))
+            
 
 get_active_ports()
 
