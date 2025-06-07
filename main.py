@@ -5,7 +5,7 @@ from const import WIDTH, HEIGHT
 from matrix import Matrix
 from matrix_connector import MatrixConnector
 from widget_manager import WidgetManager
-from matrix_widget_renderer import MatrixWidgetRenderer
+from layout_manager import LayoutManager
 
 import random
 
@@ -16,7 +16,7 @@ matrix_rep = Matrix()
 matrix_connector = MatrixConnector(matrix_rep)
 
 widget_manager = WidgetManager()
-widget_renderer = MatrixWidgetRenderer(matrix_rep)
+layout_manager = LayoutManager(matrix_rep)
 
 def save_callback():
     print("Save Clicked")
@@ -55,6 +55,9 @@ def set_matrix_pixel(x, y, value):
     print(f"{x}x{y}")
     matrix_rep.set_led(x, y, value)
     matrix_connector.flush_matrix()
+    set_preview_pixel(x, y, value)
+
+def set_preview_pixel(x, y, value):
     dpg.configure_item(f"{x}x{y}", fill=(255, 255, 255, value))
 
 def load_widget_layout(sender, app_data):
@@ -63,10 +66,18 @@ def load_widget_layout(sender, app_data):
     if selected_widget_file_path:
         dpg.set_value("loaded_widget_layout", selected_widget_file_name)
 
+def update_matrix_preview():
+    for y in range(0, HEIGHT):
+        for x in range(0, WIDTH):
+            set_preview_pixel(x, y, matrix_rep.get_led(x, y))
+            
+
 def create_widget(widget):
     print(widget)
-    widget_renderer.render_widget(widget_manager.widgets[widget](), (0, 0), None)
+    layout_manager.add_widget(widget())
+    layout_manager.render()
     matrix_connector.flush_matrix()
+    update_matrix_preview()
 
 with dpg.file_dialog(
     directory_selector=False, modal=True, show=False, callback=load_widget_layout, tag="widget_layout_file_selector", width=700 ,height=400):
@@ -94,7 +105,7 @@ with dpg.window(label="Matrix", tag="matrix", no_close=True, autosize=True):
 with dpg.window(label="Widgets", tag="widgets", no_close=True, autosize=True):
     for widget in widget_manager.widgets.keys():
         widget_name = widget_manager.widgets[widget].name
-        dpg.add_button(label=widget_name, callback=lambda: create_widget(widget))
+        dpg.add_button(label=widget_name, callback=lambda: create_widget(widget_manager.widgets[widget]))
             
 
 get_active_ports()

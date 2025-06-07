@@ -1,8 +1,9 @@
 import os
 import importlib
+from widget import Widget
 
 class WidgetManager:
-    widgets = {}
+    widgets: dict[str, Widget] = {}
     def __init__(self):
         widget_files = os.listdir("widgets")
         for widget_file in widget_files:
