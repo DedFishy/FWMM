@@ -66,7 +66,7 @@ def set_matrix_pixel(x, y, value):
 def set_preview_pixel(x, y, value):
     dpg.configure_item(f"{x}x{y}", fill=(255, 255, 255, value))
 
-def load_widget_layout(sender, app_data):
+def load_widget_layout(_, app_data):
     selected_widget_file_path = app_data["file_path_name"]
     selected_widget_file_name = app_data["file_name"]
     if selected_widget_file_path:
@@ -75,7 +75,28 @@ def load_widget_layout(sender, app_data):
             layout = json.loads(file.read())
             layout_manager.remove_all()
             for widget in layout["widgets"]:
-                create_widget(widget_manager.widgets[widget["import_name"]], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"])
+                create_widget(widget_manager.widgets[widget["import_name"]], widget["import_name"], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"])
+
+def generate_layout_dict():
+    return {
+        "widgets": [
+            {
+                "position": widget.widget.position,
+                "rotation": widget.widget.rotation,
+                "color": widget.color,
+                "import_name": widget.widget.import_name,
+                "configuration": {field: widget.widget.configuration[field].value for field in widget.widget.configuration.keys()}
+            } for widget in layout_manager.widgets
+        ]
+    }
+
+def save_widget_layout(_, app_data):
+    selected_widget_file_path = app_data["file_path_name"]
+    selected_widget_file_name = app_data["file_name"]
+    if selected_widget_file_path:
+        dpg.set_value("loaded_widget_layout", selected_widget_file_name)
+        with open(selected_widget_file_path, "w+") as file:
+            file.write(json.dumps(generate_layout_dict()))
 
 def update_matrix_preview():
     for y in range(0, HEIGHT):
@@ -83,9 +104,10 @@ def update_matrix_preview():
             set_preview_pixel(x, y, matrix_rep.get_led(x, y))
             
 
-def create_widget(widget, is_loaded=False, position=None, rotation=None, color=None, config=None):
+def create_widget(widget, import_name, is_loaded=False, position=None, rotation=None, color=None, config=None):
     print(widget)
     widget_instance: Widget = widget()
+    widget_instance.import_name = import_name
     if is_loaded:
         widget_instance.position = position
         widget_instance.rotation = rotation
@@ -100,6 +122,10 @@ with dpg.file_dialog(
     directory_selector=False, modal=True, show=False, callback=load_widget_layout, tag="widget_layout_file_selector", width=700 ,height=400):
     dpg.add_file_extension("FWMM Widget Layout (.mmw){.mmw}")
 
+with dpg.file_dialog(
+    directory_selector=False, modal=True, show=False, callback=save_widget_layout, tag="widget_layout_file_namer", width=700 ,height=400):
+    dpg.add_file_extension("FWMM Widget Layout (.mmw){.mmw}")
+
 with dpg.window(label="Settings", tag="settings", no_close=True, autosize=True):
     # COM Port
     with dpg.group(horizontal=True):
@@ -109,6 +135,7 @@ with dpg.window(label="Settings", tag="settings", no_close=True, autosize=True):
     with dpg.group(horizontal=True):
         dpg.add_text("None selected", tag="loaded_widget_layout")
         dpg.add_button(label="Load Widget Layout", callback=lambda: dpg.show_item("widget_layout_file_selector"))
+        dpg.add_button(label="Save Widget Layout", callback=lambda: dpg.show_item("widget_layout_file_namer"))
 
     dpg.bind_font(default_font)
 
@@ -127,7 +154,7 @@ with dpg.window(label="Widget Layout", tag="widget-layout", no_close=True, autos
 with dpg.window(label="Widgets", tag="widgets", no_close=True, autosize=True):
     for widget in widget_manager.widgets.keys():
         widget_name = widget_manager.widgets[widget].name
-        dpg.add_button(label=widget_name, callback=lambda: create_widget(widget_manager.widgets[widget]))
+        dpg.add_button(label=widget_name, callback=lambda: create_widget(widget_manager.widgets[widget], widget))
             
 
 get_active_ports()

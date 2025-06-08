@@ -2,16 +2,12 @@ from enum import Enum
 
 from widget_config_item import WidgetConfigItem
 
-class WidgetRotation(Enum):
-    NORTH = 0
-    SOUTH = 1
-    EAST = 2
-    WEST = 3
 
 class Widget:
     name: str = None
     position = [0,0]
-    rotation = WidgetRotation.NORTH
+    rotation = 0 # Each increment from 0 is 90 degrees clockwise
+    import_name = None
 
     configuration: dict[str, WidgetConfigItem] = {}
 
