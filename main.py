@@ -24,9 +24,6 @@ def flush_layout_manager():
     update_matrix_preview()
 layout_manager = LayoutManager(matrix_rep, lambda: flush_layout_manager())
 
-def save_callback():
-    print("Save Clicked")
-
 dpg.create_context()
 
 with dpg.font_registry():
@@ -58,7 +55,6 @@ def get_active_ports():
             try_connect_matrix()
 
 def set_matrix_pixel(x, y, value):
-    print(f"{x}x{y}")
     matrix_rep.set_led(x, y, value)
     matrix_connector.flush_matrix()
     set_preview_pixel(x, y, value)
@@ -105,7 +101,6 @@ def update_matrix_preview():
             
 
 def create_widget(widget, import_name, is_loaded=False, position=None, rotation=None, color=None, config=None):
-    print(widget)
     widget_instance: Widget = widget()
     widget_instance.import_name = import_name
     if is_loaded:
@@ -154,7 +149,7 @@ with dpg.window(label="Widget Layout", tag="widget-layout", no_close=True, autos
 with dpg.window(label="Widgets", tag="widgets", no_close=True, autosize=True):
     for widget in widget_manager.widgets.keys():
         widget_name = widget_manager.widgets[widget].name
-        dpg.add_button(label=widget_name, callback=lambda: create_widget(widget_manager.widgets[widget], widget))
+        dpg.add_button(label=widget_name, tag="create-" + widget, callback=lambda sender, _: create_widget(widget_manager.widgets[sender.removeprefix("create-")], sender.removeprefix("create-")))
             
 
 get_active_ports()

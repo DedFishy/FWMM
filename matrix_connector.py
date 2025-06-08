@@ -190,6 +190,7 @@ class MatrixConnector:
          self._stage_matrix_column(column)
    
    def flush_matrix(self):
+      self.matrix.log_state()
       self._stage_whole_matrix()
       self.flush_columns()
    

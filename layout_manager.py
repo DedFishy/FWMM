@@ -25,6 +25,11 @@ class LayoutManager:
             widget.destroy()
         self.widgets = []
 
+    def remove(self, widget):
+        self.widgets.remove(widget)
+        self.render()
+        self.flush_callback()
+
     def collapse_all(self):
         for widget in self.widgets:
             if widget.showing_config:

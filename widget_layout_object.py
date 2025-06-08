@@ -43,6 +43,10 @@ class WidgetObjectLayout:
     def destroy(self):
         dpg.delete_item(self.get_tag())
         dpg.delete_item(self.get_tag() + "-config-parent")
+    
+    def remove(self, *_):
+        self.layout_manager.remove(self)
+        self.destroy()
 
     def edit_color(self, _, app_data):
         self.color = app_data
@@ -74,7 +78,9 @@ class WidgetObjectLayout:
         with dpg.group(horizontal=True, parent="widget-configurations", tag=self.get_tag() + "-config-parent"):
             dpg.add_color_edit(self.color, tag=self.get_tag() + "-color", callback=self.edit_color, no_inputs=True)
             with dpg.group():
-                dpg.add_button(label = str(self.widget_id + 1) + ": " + self.widget.name, callback=self.toggle_showing_config)
+                with dpg.group(horizontal=True):
+                    dpg.add_button(label = str(self.widget_id + 1) + ": " + self.widget.name, callback=self.toggle_showing_config)
+                    dpg.add_button(label = "Delete", callback = self.remove)
                 with dpg.group(show=self.showing_config, tag=self.get_tag() + "-config-collapse"):
                     dpg.add_text("Transformation")
                     dpg.add_input_intx(label="Position", size=2, callback=self.move, default_value=self.widget.position)

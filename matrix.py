@@ -11,6 +11,7 @@ class Matrix:
         self.matrix = [[color] * WIDTH for _ in range(0, HEIGHT)]
         
     def log_state(self):
+        print(self.matrix)
         for row in self.matrix:
             for col in row:
                 print("#" if col > 100 else " ", end=" ")
