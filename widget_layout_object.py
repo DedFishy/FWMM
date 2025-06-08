@@ -1,0 +1,79 @@
+from widget import Widget
+import dearpygui.dearpygui as dpg
+
+from widget_config_item import ConfigItemType
+from const import MATRIX_SCALE
+
+from random import randint
+
+
+class WidgetObjectLayout:
+
+    widget: Widget = None
+    layout_manager = None
+    widget_id: int = None
+    color = None
+
+    def __init__(self, widget: Widget, layout_manager, wid: int):
+        self.color = (randint(0, 255), randint(0, 255), randint(0, 255), 255)
+        self.widget = widget
+        self.layout_manager = layout_manager
+        self.widget_id = wid
+        print(self.widget_id)
+
+    def get_tag(self):
+        return "widget-" + str(self.widget_id)
+
+    def create_second_widget_bounds(self):
+        return ((self.widget.position[0] + self.widget.get_current_size()[0]) * MATRIX_SCALE, (self.widget.position[1] + self.widget.get_current_size()[1]) * MATRIX_SCALE)
+    
+    def update_config_value(self, sender, app_data):
+        config_item = dpg.get_item_configuration(sender)["label"]
+        print(config_item, app_data)
+        self.widget.configuration[config_item].value = app_data
+        self.update()
+        self.layout_manager.render()
+        self.layout_manager.flush_callback()
+
+    def edit_color(self, sender, app_data):
+        self.color = app_data
+        for i in range(0, len(self.color)):
+            self.color[i] *= 255
+            self.color[i] = int(self.color[i])
+        self.update()
+    
+    def create_dpg(self):
+        dpg.draw_rectangle(
+            self.widget.position, 
+            self.create_second_widget_bounds(), 
+            tag = self.get_tag(),
+            fill = self.color,
+            parent="widget-layout-parent"
+        )
+        with dpg.group(horizontal=True, parent="widget-configurations"):
+            dpg.add_color_edit(self.color, tag=self.get_tag() + "-color", callback=self.edit_color, no_inputs=True)
+            with dpg.child_window(border=False, auto_resize_y=True, auto_resize_x=True): # To prevent expansion bug in DearImGUI
+                with dpg.collapsing_header(label = str(self.widget_id + 1) + ": " + self.widget.name, tag=self.get_tag() + "-header"):
+                    for config_key in self.widget.configuration.keys():
+                        value = self.widget.configuration[config_key]
+                        args = {"label": config_key, "default_value": value.value, "callback": self.update_config_value}
+                        if value.config_item_type == ConfigItemType.text:
+                            dpg.add_input_text(**args)
+                        elif value.config_item_type == ConfigItemType.integer:
+                            dpg.add_input_int(**args, min_value=value.minimum, max_value=value.maximum, min_clamped=True, max_clamped=True)
+                        elif value.config_item_type == ConfigItemType.float:
+                            dpg.add_input_float(**args, min_value=value.minimum, max_value=value.maximum, min_clamped=True, max_clamped=True)
+                        elif value.config_item_type == ConfigItemType.integer_list:
+                            dpg.add_input_intx(**args, size=len(value), min_value=value.minimum, max_value=value.maximum, min_clamped=True, max_clamped=True)
+                        elif value.config_item_type == ConfigItemType.float_list:
+                            dpg.add_input_floatx(**args, size=len(value), min_value=value.minimum, max_value=value.maximum, min_clamped=True, max_clamped=True)
+                        else:
+                            raise TypeError("Config item type unaccounted for: " + str(value.config_item_type))
+    
+    def update(self):
+
+        dpg.configure_item(
+            self.get_tag(), 
+            pmin = self.widget.position, 
+            pmax = self.create_second_widget_bounds(),
+            fill = self.color)

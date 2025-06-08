@@ -1,2 +1,2 @@
 pyserial
-pyside6
+dearpygui

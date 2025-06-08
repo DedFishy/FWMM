@@ -1,7 +1,13 @@
 from const import WIDTH, HEIGHT
 
 class Matrix:
+
+    matrix = [[]]
+    
     def __init__(self, color=0):
+        self.fill(color)
+
+    def fill(self, color):
         self.matrix = [[color] * WIDTH for _ in range(0, HEIGHT)]
         
     def log_state(self):

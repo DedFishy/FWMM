@@ -1,22 +1,26 @@
 import dearpygui.dearpygui as dpg
 import util
 import detect
-from const import WIDTH, HEIGHT
+from const import WIDTH, HEIGHT, MATRIX_SCALE, MATRIX_OFFSET
 from matrix import Matrix
 from matrix_connector import MatrixConnector
 from widget_manager import WidgetManager
 from layout_manager import LayoutManager
+from widget_layout_object import WidgetObjectLayout
 
 import random
 
-MATRIX_SCALE = 10
-MATRIX_OFFSET = MATRIX_SCALE/2
+
 
 matrix_rep = Matrix()
 matrix_connector = MatrixConnector(matrix_rep)
 
 widget_manager = WidgetManager()
-layout_manager = LayoutManager(matrix_rep)
+
+def flush_layout_manager():
+    matrix_connector.flush_matrix()
+    update_matrix_preview()
+layout_manager = LayoutManager(matrix_rep, lambda: flush_layout_manager())
 
 def save_callback():
     print("Save Clicked")
@@ -101,6 +105,11 @@ with dpg.window(label="Matrix", tag="matrix", no_close=True, autosize=True):
             for y in range(0, HEIGHT):
                 dpg.draw_circle((x*MATRIX_SCALE+MATRIX_OFFSET, y*MATRIX_SCALE+MATRIX_OFFSET), MATRIX_OFFSET, tag=f"{x}x{y}", color=(0, 0, 0, 0), fill=(255, 255, 255, 0))
     dpg.add_button(label="Experiment", callback=lambda: set_matrix_pixel(random.randint(0, WIDTH-1), random.randint(0, HEIGHT-1), random.randint(0, 255)))
+
+with dpg.window(label="Widget Layout", tag="widget-layout", no_close=True, autosize=True):
+    with dpg.group(horizontal=True):
+        dpg.add_drawlist(width = WIDTH * MATRIX_SCALE, height = HEIGHT * MATRIX_SCALE, tag="widget-layout-parent")
+        dpg.add_group(horizontal=False, tag="widget-configurations")
 
 with dpg.window(label="Widgets", tag="widgets", no_close=True, autosize=True):
     for widget in widget_manager.widgets.keys():
