@@ -13,6 +13,7 @@ class WidgetObjectLayout:
     layout_manager = None
     widget_id: int = None
     color = None
+    showing_config = False
 
     def __init__(self, widget: Widget, layout_manager, wid: int):
         self.color = (randint(0, 255), randint(0, 255), randint(0, 255), 255)
@@ -23,6 +24,9 @@ class WidgetObjectLayout:
 
     def get_tag(self):
         return "widget-" + str(self.widget_id)
+    
+    def create_first_widget_bounds(self):
+        return (self.widget.position[0] * MATRIX_SCALE, self.widget.position[1] * MATRIX_SCALE)
 
     def create_second_widget_bounds(self):
         return ((self.widget.position[0] + self.widget.get_current_size()[0]) * MATRIX_SCALE, (self.widget.position[1] + self.widget.get_current_size()[1]) * MATRIX_SCALE)
@@ -35,16 +39,28 @@ class WidgetObjectLayout:
         self.layout_manager.render()
         self.layout_manager.flush_callback()
 
-    def edit_color(self, sender, app_data):
+    def edit_color(self, _, app_data):
         self.color = app_data
         for i in range(0, len(self.color)):
             self.color[i] *= 255
             self.color[i] = int(self.color[i])
         self.update()
+
+    def move(self, _, app_data):
+        self.widget.position = app_data[:2]
+        self.update()
+        self.layout_manager.render()
+        self.layout_manager.flush_callback()
+
+    def toggle_showing_config(self, *_):
+        if not self.showing_config: self.layout_manager.collapse_all()
+        self.showing_config = not self.showing_config
+        
+        dpg.configure_item(self.get_tag() + "-config-collapse", show=self.showing_config)
     
     def create_dpg(self):
         dpg.draw_rectangle(
-            self.widget.position, 
+            self.create_first_widget_bounds(), 
             self.create_second_widget_bounds(), 
             tag = self.get_tag(),
             fill = self.color,
@@ -52,8 +68,14 @@ class WidgetObjectLayout:
         )
         with dpg.group(horizontal=True, parent="widget-configurations"):
             dpg.add_color_edit(self.color, tag=self.get_tag() + "-color", callback=self.edit_color, no_inputs=True)
-            with dpg.child_window(border=False, auto_resize_y=True, auto_resize_x=True): # To prevent expansion bug in DearImGUI
-                with dpg.collapsing_header(label = str(self.widget_id + 1) + ": " + self.widget.name, tag=self.get_tag() + "-header"):
+            with dpg.group():
+                dpg.add_button(label = str(self.widget_id + 1) + ": " + self.widget.name, callback=self.toggle_showing_config)
+                #with dpg.child_window(border=False, auto_resize_y=True, auto_resize_x=True): # To prevent expansion bug in DearImGUI
+                    #with dpg.collapsing_header(label = str(self.widget_id + 1) + ": " + self.widget.name, tag=self.get_tag() + "-header"):
+                with dpg.group(show=self.showing_config, tag=self.get_tag() + "-config-collapse"):
+                    dpg.add_text("Transformation")
+                    dpg.add_input_intx(label="Position", size=2, callback=self.move, default_value=self.widget.position)
+                    dpg.add_text("Configuration")
                     for config_key in self.widget.configuration.keys():
                         value = self.widget.configuration[config_key]
                         args = {"label": config_key, "default_value": value.value, "callback": self.update_config_value}
@@ -69,11 +91,12 @@ class WidgetObjectLayout:
                             dpg.add_input_floatx(**args, size=len(value), min_value=value.minimum, max_value=value.maximum, min_clamped=True, max_clamped=True)
                         else:
                             raise TypeError("Config item type unaccounted for: " + str(value.config_item_type))
+                    
     
     def update(self):
 
         dpg.configure_item(
             self.get_tag(), 
-            pmin = self.widget.position, 
+            pmin = self.create_first_widget_bounds(), 
             pmax = self.create_second_widget_bounds(),
             fill = self.color)

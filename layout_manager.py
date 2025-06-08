@@ -18,6 +18,11 @@ class LayoutManager:
         widget_object_layout = WidgetObjectLayout(widget, self, len(self.widgets))
         self.widgets.append(widget_object_layout)
         widget_object_layout.create_dpg()
+
+    def collapse_all(self):
+        for widget in self.widgets:
+            if widget.showing_config:
+                widget.toggle_showing_config()
     
     def render(self):
         self.matrix.fill(0)
