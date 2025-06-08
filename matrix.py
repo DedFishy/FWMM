@@ -3,7 +3,7 @@ from const import WIDTH, HEIGHT
 class Matrix:
 
     matrix = [[]]
-    
+
     def __init__(self, color=0):
         self.fill(color)
 
@@ -17,7 +17,9 @@ class Matrix:
             print()
 
     def set_led(self, x, y, value):
-        self.matrix[y][x] = value
+        try:
+            self.matrix[y][x] = value
+        except IndexError: pass
 
     def get_led(self, x, y):
         return self.matrix[y][x]

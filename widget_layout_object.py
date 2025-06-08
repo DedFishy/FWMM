@@ -15,8 +15,9 @@ class WidgetObjectLayout:
     color = None
     showing_config = False
 
-    def __init__(self, widget: Widget, layout_manager, wid: int):
-        self.color = (randint(0, 255), randint(0, 255), randint(0, 255), 255)
+    def __init__(self, widget: Widget, layout_manager, wid: int, color = None):
+        if not color: self.color = (randint(0, 255), randint(0, 255), randint(0, 255), 255)
+        else: self.color = color
         self.widget = widget
         self.layout_manager = layout_manager
         self.widget_id = wid
@@ -38,6 +39,10 @@ class WidgetObjectLayout:
         self.update()
         self.layout_manager.render()
         self.layout_manager.flush_callback()
+
+    def destroy(self):
+        dpg.delete_item(self.get_tag())
+        dpg.delete_item(self.get_tag() + "-config-parent")
 
     def edit_color(self, _, app_data):
         self.color = app_data
@@ -66,12 +71,10 @@ class WidgetObjectLayout:
             fill = self.color,
             parent="widget-layout-parent"
         )
-        with dpg.group(horizontal=True, parent="widget-configurations"):
+        with dpg.group(horizontal=True, parent="widget-configurations", tag=self.get_tag() + "-config-parent"):
             dpg.add_color_edit(self.color, tag=self.get_tag() + "-color", callback=self.edit_color, no_inputs=True)
             with dpg.group():
                 dpg.add_button(label = str(self.widget_id + 1) + ": " + self.widget.name, callback=self.toggle_showing_config)
-                #with dpg.child_window(border=False, auto_resize_y=True, auto_resize_x=True): # To prevent expansion bug in DearImGUI
-                    #with dpg.collapsing_header(label = str(self.widget_id + 1) + ": " + self.widget.name, tag=self.get_tag() + "-header"):
                 with dpg.group(show=self.showing_config, tag=self.get_tag() + "-config-collapse"):
                     dpg.add_text("Transformation")
                     dpg.add_input_intx(label="Position", size=2, callback=self.move, default_value=self.widget.position)

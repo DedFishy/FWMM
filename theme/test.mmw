@@ -1,3 +1,15 @@
 {
-    "yes": "yes"
+    "widgets": [
+        {
+            "import_name": "rect",
+            "position": [2, 2],
+            "rotation": 1,
+            "color": [125, 255, 32],
+            "configuration": {
+                "Rectangle Width": 4,
+                "Rectangle Height": 2,
+                "Brightness": 200
+            }
+        }
+    ]
 }

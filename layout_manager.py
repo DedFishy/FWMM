@@ -13,11 +13,17 @@ class LayoutManager:
         self.matrix = matrix
         self.flush_callback = flush_callback
 
-    def add_widget(self, widget: Widget):
+    def add_widget(self, widget: Widget, color=None):
         print(widget)
-        widget_object_layout = WidgetObjectLayout(widget, self, len(self.widgets))
+        widget_object_layout = WidgetObjectLayout(widget, self, len(self.widgets), color)
         self.widgets.append(widget_object_layout)
         widget_object_layout.create_dpg()
+        return widget_object_layout
+
+    def remove_all(self):
+        for widget in self.widgets:
+            widget.destroy()
+        self.widgets = []
 
     def collapse_all(self):
         for widget in self.widgets:

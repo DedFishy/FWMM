@@ -1,9 +1,11 @@
+import json
 import dearpygui.dearpygui as dpg
 import util
 import detect
 from const import WIDTH, HEIGHT, MATRIX_SCALE, MATRIX_OFFSET
 from matrix import Matrix
 from matrix_connector import MatrixConnector
+from widget import Widget
 from widget_manager import WidgetManager
 from layout_manager import LayoutManager
 from widget_layout_object import WidgetObjectLayout
@@ -69,6 +71,11 @@ def load_widget_layout(sender, app_data):
     selected_widget_file_name = app_data["file_name"]
     if selected_widget_file_path:
         dpg.set_value("loaded_widget_layout", selected_widget_file_name)
+        with open(selected_widget_file_path) as file:
+            layout = json.loads(file.read())
+            layout_manager.remove_all()
+            for widget in layout["widgets"]:
+                create_widget(widget_manager.widgets[widget["import_name"]], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"])
 
 def update_matrix_preview():
     for y in range(0, HEIGHT):
@@ -76,9 +83,15 @@ def update_matrix_preview():
             set_preview_pixel(x, y, matrix_rep.get_led(x, y))
             
 
-def create_widget(widget):
+def create_widget(widget, is_loaded=False, position=None, rotation=None, color=None, config=None):
     print(widget)
-    layout_manager.add_widget(widget())
+    widget_instance: Widget = widget()
+    if is_loaded:
+        widget_instance.position = position
+        widget_instance.rotation = rotation
+        for field in config.keys():
+            widget_instance.configuration[field].value = config[field]
+    layout_manager.add_widget(widget_instance, color + [255] if color is not None else None)
     layout_manager.render()
     matrix_connector.flush_matrix()
     update_matrix_preview()
