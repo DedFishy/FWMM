@@ -1,3 +1,5 @@
+import numpy as np
+from const import HEIGHT, WIDTH
 from matrix import Matrix
 from widget import Widget
 from matrix import Matrix
@@ -14,7 +16,6 @@ class LayoutManager:
         self.flush_callback = flush_callback
 
     def add_widget(self, widget: Widget, color=None):
-        print(widget)
         widget_object_layout = WidgetObjectLayout(widget, self, len(self.widgets), color)
         self.widgets.append(widget_object_layout)
         widget_object_layout.create_dpg()
@@ -41,7 +42,10 @@ class LayoutManager:
             self.render_widget(widget)
 
     def render_widget(self, widget: WidgetObjectLayout):
-        widget_pixels = widget.widget.get_frame()
-        for x in range(0, widget.widget.get_current_size()[0]):
-            for y in range(0, widget.widget.get_current_size()[1]):
-                self.matrix.set_led(widget.widget.position[0]+x, widget.widget.position[1]+y, widget_pixels[y][x])
+        widget_pixels: np.matrix = widget.widget.get_frame()
+        print("rendering")
+        print(widget_pixels)
+        if type(widget_pixels) == list:
+            widget_pixels = np.matrix(widget_pixels)
+
+        self.matrix.impose(widget_pixels, widget.widget.position)

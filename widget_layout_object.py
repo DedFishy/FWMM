@@ -21,7 +21,6 @@ class WidgetObjectLayout:
         self.widget = widget
         self.layout_manager = layout_manager
         self.widget_id = wid
-        print(self.widget_id)
 
     def get_tag(self):
         return "widget-" + str(self.widget_id)
@@ -34,10 +33,9 @@ class WidgetObjectLayout:
     
     def update_config_value(self, sender, app_data):
         config_item = dpg.get_item_configuration(sender)["label"]
-        print(config_item, app_data)
         self.widget.configuration[config_item].value = app_data
-        self.update()
         self.layout_manager.render()
+        self.update()
         self.layout_manager.flush_callback()
 
     def destroy(self):
@@ -57,8 +55,14 @@ class WidgetObjectLayout:
 
     def move(self, _, app_data):
         self.widget.position = app_data[:2]
-        self.update()
         self.layout_manager.render()
+        self.update()
+        self.layout_manager.flush_callback()
+    
+    def rotate(self, _, app_data):
+        self.widget.rotation = int(app_data)
+        self.layout_manager.render()
+        self.update()
         self.layout_manager.flush_callback()
 
     def toggle_showing_config(self, *_):
@@ -68,6 +72,7 @@ class WidgetObjectLayout:
         dpg.configure_item(self.get_tag() + "-config-collapse", show=self.showing_config)
     
     def create_dpg(self):
+        self.widget.get_frame() # Initialize the widget's size and other attributes in case it relies on frames to do so
         dpg.draw_rectangle(
             self.create_first_widget_bounds(), 
             self.create_second_widget_bounds(), 
@@ -84,6 +89,8 @@ class WidgetObjectLayout:
                 with dpg.group(show=self.showing_config, tag=self.get_tag() + "-config-collapse"):
                     dpg.add_text("Transformation")
                     dpg.add_input_intx(label="Position", size=2, callback=self.move, default_value=self.widget.position)
+                    if self.widget.allow_rotation:
+                        dpg.add_combo([0, 90, 180, 270], label="Rotation (deg)", callback=self.rotate, default_value=self.widget.rotation)
                     dpg.add_text("Configuration")
                     for config_key in self.widget.configuration.keys():
                         value = self.widget.configuration[config_key]

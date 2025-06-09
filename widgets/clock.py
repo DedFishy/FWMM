@@ -89,7 +89,8 @@ class Widget(WidgetBase):
     name = "Clock"
     desired_spf = 60
     allow_rotation = True
-    current_render = [[]]
+    current_render: np.matrix = np.matrix([[]])
+    rotation = 0
 
     def __init__(self):
         self.configuration = {
@@ -98,13 +99,18 @@ class Widget(WidgetBase):
         }
 
     def get_current_size(self):
-        return [len(self.current_render[0]), len(self.current_render)]
+        print("Current size:", self.current_render.shape)
+        return (self.current_render.shape[1], self.current_render.shape[0])
     
     def get_desired_spf(self):
         return -1
     
     def append_character(self, matrix: np.matrix, character: np.matrix, spacing=1):
-        matrix = np.concatenate(matrix, character) # TODO: Finish conversion to Numpy, add rotation to the transform list, and add configuration types for booleans and dropdowns (index based)
+        spacer = [
+            [0 for _ in range(0, spacing)] for _ in range(0, matrix.shape[0])
+        ]
+        matrix = np.concatenate((matrix, np.matrix(spacer)), axis=1)
+        matrix = np.concatenate((matrix, character), axis=1)
         return matrix
     
     def render(self, digit_one, digit_two, digit_three, digit_four):
@@ -115,7 +121,7 @@ class Widget(WidgetBase):
             [],
             []
         ])
-        rows = self.append_character(rows, numbers[digit_one])
+        rows = self.append_character(rows, numbers[digit_one], spacing=0)
         rows = self.append_character(rows, numbers[digit_two])
         rows = self.append_character(rows, colon)
         rows = self.append_character(rows, numbers[digit_three])
@@ -123,6 +129,9 @@ class Widget(WidgetBase):
         for y in range(0, len(rows)):
             for x in range(0, len(rows[y])):
                 rows[y][x] *= self.configuration["Brightness"].value
+        
+        if self.allow_rotation and self.rotation != 0:
+            rows = np.rot90(rows, self.rotation // 90)
         self.current_render = rows
         return rows
 

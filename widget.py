@@ -6,8 +6,9 @@ from widget_config_item import WidgetConfigItem
 class Widget:
     name: str = None
     position = [0,0]
-    rotation = 0 # Each increment from 0 is 90 degrees clockwise
+    rotation = 0 # Must be 0 or multiple of 90
     import_name = None
+    allow_rotation = True
 
     configuration: dict[str, WidgetConfigItem] = {}
 
