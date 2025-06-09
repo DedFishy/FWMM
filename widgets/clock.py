@@ -14,11 +14,11 @@ np.matrix([
     [1,1,1],
 ]),
 np.matrix([
-    [1],
-    [1],
-    [1],
-    [1],
-    [1],
+    [0,1,0],
+    [0,1,0],
+    [0,1,0],
+    [0,1,0],
+    [0,1,0],
 ]),
 np.matrix([
     [1,1,1],
@@ -87,7 +87,6 @@ colon = np.matrix([
 
 class Widget(WidgetBase):
     name = "Clock"
-    desired_spf = 60
     allow_rotation = True
     current_render: np.matrix = np.matrix([[]])
     rotation = 0
@@ -103,7 +102,7 @@ class Widget(WidgetBase):
         return (self.current_render.shape[1], self.current_render.shape[0])
     
     def get_desired_spf(self):
-        return -1
+        return 30
     
     def append_character(self, matrix: np.matrix, character: np.matrix, spacing=1):
         spacer = [

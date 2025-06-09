@@ -35,6 +35,16 @@ class LayoutManager:
         for widget in self.widgets:
             if widget.showing_config:
                 widget.toggle_showing_config()
+
+    def get_desired_spf(self):
+        spf = -1
+        for widget in self.widgets:
+            desired = widget.widget.get_desired_spf()
+            print(desired)
+            if desired == -1: desired = 30
+            if desired < spf or spf == -1:
+                spf = desired
+        return spf
     
     def render(self):
         self.matrix.fill(0)

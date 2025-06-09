@@ -5,7 +5,7 @@ from const import WIDTH, HEIGHT
 
 class Widget(WidgetBase):
     name = "Rectangle of Glory"
-    desired_spf = 60
+    desired_spf = -1
     allow_rotation = False
 
     def __init__(self):
