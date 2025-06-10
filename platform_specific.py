@@ -17,7 +17,7 @@ class Windows(PlatformSpecificFunctions):
         with open(os.path.join(self.startup_location, "FWMM.bat"), "w+") as startup_script:
             script = "@echo off"
             script += "\ncd " + str(Path(os.path.abspath(__file__)).parent.resolve())
-            script += "\n" + os.path.realpath(sys.executable) + " main.py skip-window"
+            script += "\nstart " + str(Path(sys.executable).parent.resolve()) + "/pythonw.exe main.py skip-window"
             startup_script.write(script)
 
 def get_class() -> PlatformSpecificFunctions:

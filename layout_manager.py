@@ -11,6 +11,9 @@ class LayoutManager:
     matrix: Matrix = None
     flush_callback = None
 
+    selected_layout_file_path = None
+    selected_layout_file_name = None
+
     def __init__(self, matrix: Matrix, flush_callback):
         self.matrix = matrix
         self.flush_callback = flush_callback
@@ -20,6 +23,19 @@ class LayoutManager:
         self.widgets.append(widget_object_layout)
         widget_object_layout.create_dpg()
         return widget_object_layout
+
+    def generate_layout_dict(self):
+        return {
+            "widgets": [
+                {
+                    "position": widget.widget.position,
+                    "rotation": widget.widget.rotation,
+                    "color": widget.color,
+                    "import_name": widget.widget.import_name,
+                    "configuration": {field: widget.widget.configuration[field].value for field in widget.widget.configuration.keys()}
+                } for widget in self.widgets
+            ]
+        }
 
     def remove_all(self):
         for widget in self.widgets:
