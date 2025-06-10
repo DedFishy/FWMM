@@ -98,7 +98,6 @@ class Widget(WidgetBase):
         }
 
     def get_current_size(self):
-        print("Current size:", self.current_render.shape)
         return (self.current_render.shape[1], self.current_render.shape[0])
     
     def get_desired_spf(self):

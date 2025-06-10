@@ -53,8 +53,6 @@ class LayoutManager:
 
     def render_widget(self, widget: WidgetObjectLayout):
         widget_pixels: np.matrix = widget.widget.get_frame()
-        print("rendering")
-        print(widget_pixels)
         if type(widget_pixels) == list:
             widget_pixels = np.matrix(widget_pixels)
 

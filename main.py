@@ -16,7 +16,7 @@ from widget_manager import WidgetManager
 from layout_manager import LayoutManager
 from widget_layout_object import WidgetObjectLayout
 import sys
-
+import platform_specific
 import random
 
 config = Config()
@@ -25,6 +25,8 @@ matrix_rep = Matrix()
 matrix_connector = MatrixConnector(matrix_rep)
 
 widget_manager = WidgetManager()
+
+platform_specific_functions = platform_specific.get_class()
 
 running = True
 waiting_for_tray = False
@@ -60,13 +62,16 @@ selected_layout_file_name = None
 ports = {}
 
 def try_connect_matrix():
+    print("connecting to matrix")
     port = dpg.get_value("com_port_select")
     try:
+        print("going for it")
         matrix_connector.connect(port)
     except Exception as e:
         print(e)
 
 def get_active_ports():
+    print("getting active ports")
     ports = detect.get_active_ports()
     
     dpg.configure_item("com_port_select", items=list(ports.keys()))
@@ -158,14 +163,20 @@ def set_default_layout(*_):
 def launch_window(skip_window = False):
     global waiting_for_tray
 
+    print("creating context")
+
     icon.visible = False
     dpg.create_context()
 
     with dpg.font_registry():
         default_font = dpg.add_font("assets/font.ttf", 20)
 
-    dpg.create_viewport(title="Framework Matrix Manager")
-    dpg.setup_dearpygui()
+    print("setup")
+
+    dpg.create_viewport(title="Framework Matrix Manager", width=1000, height=600, small_icon="icon.ico",large_icon="icon.ico")
+    print("setup_dearpygui")
+    if not skip_window: dpg.setup_dearpygui()
+    print("creating everything")
 
     with dpg.file_dialog(
         directory_selector=False, modal=True, show=False, callback=load_widget_layout, tag="widget_layout_file_selector", width=700 ,height=400):
@@ -175,44 +186,70 @@ def launch_window(skip_window = False):
         directory_selector=False, modal=True, show=False, callback=save_widget_layout, tag="widget_layout_file_namer", width=700 ,height=400):
         dpg.add_file_extension("FWMM Widget Layout (.mmw){.mmw}")
 
-    with dpg.window(label="Settings", tag="settings", no_close=True, autosize=True):
-        # COM Port
+    with dpg.window(label = "Main Window", tag="Main Window", no_close=True, no_resize=True, no_title_bar=True, no_move=True, horizontal_scrollbar=True, no_background=True):
         with dpg.group(horizontal=True):
-            dpg.add_combo([], label="COM Port", tag="com_port_select", callback=try_connect_matrix)
-            dpg.add_button(label="Rescan", callback=get_active_ports)
-        # Widget Layout
-        with dpg.group(horizontal=True):
-            dpg.add_text("None selected", tag="loaded_widget_layout")
-            dpg.add_button(label="Load Widget Layout", callback=lambda: dpg.show_item("widget_layout_file_selector"))
-            dpg.add_button(label="Save Widget Layout", callback=lambda: dpg.show_item("widget_layout_file_namer"))
-        dpg.add_button(label="Set As Default", callback=set_default_layout)
+            with dpg.group(width=150):
 
-        dpg.bind_font(default_font)
+                # Control
+                dpg.add_text("FWMM")
+                dpg.add_button(label="Exit", callback=lambda: kill())
+                dpg.add_button(label="Add to Startup", callback=lambda: platform_specific_functions.add_self_to_startup())
 
-    with dpg.window(label="Matrix", tag="matrix", no_close=True, autosize=True):
-        with dpg.drawlist(width = WIDTH * MATRIX_SCALE, height = HEIGHT * MATRIX_SCALE):
-            for x in range(0, WIDTH):
-                for y in range(0, HEIGHT):
-                    dpg.draw_circle((x*MATRIX_SCALE+MATRIX_OFFSET, y*MATRIX_SCALE+MATRIX_OFFSET), MATRIX_OFFSET, tag=f"{x}x{y}", color=(0, 0, 0, 0), fill=(255, 255, 255, 0))
-        dpg.add_button(label="Experiment", callback=lambda: set_matrix_pixel(random.randint(0, WIDTH-1), random.randint(0, HEIGHT-1), random.randint(0, 255)))
+                # COM Port
+                dpg.add_text("Connection")
+                dpg.add_combo([], label="", tag="com_port_select", callback=try_connect_matrix)
+                dpg.add_button(label="Rescan", callback=get_active_ports)
 
-    with dpg.window(label="Widget Layout", tag="widget-layout", no_close=True, autosize=True):
-        with dpg.group(horizontal=True):
-            dpg.add_drawlist(width = WIDTH * MATRIX_SCALE, height = HEIGHT * MATRIX_SCALE, tag="widget-layout-parent")
-            dpg.add_group(horizontal=False, tag="widget-configurations")
+                # Widget Layout
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Layout:")
+                    dpg.add_text("None selected", tag="loaded_widget_layout")
+                dpg.add_button(label="Load Layout", callback=lambda: dpg.show_item("widget_layout_file_selector"))
+                dpg.add_button(label="Save Layout", callback=lambda: dpg.show_item("widget_layout_file_namer"))
+                dpg.add_button(label="Set As Default", callback=set_default_layout)
 
-    with dpg.window(label="Widgets", tag="widgets", no_close=True, autosize=True):
-        for widget in widget_manager.widgets.keys():
-            widget_name = widget_manager.widgets[widget].name
-            dpg.add_button(label=widget_name, tag="create-" + widget, callback=lambda sender, _: create_widget(widget_manager.widgets[sender.removeprefix("create-")], sender.removeprefix("create-")))
+                dpg.bind_font(default_font)
+
+            with dpg.group():
+                dpg.add_text("Preview")
+                with dpg.drawlist(width = WIDTH * MATRIX_SCALE, height = HEIGHT * MATRIX_SCALE):
+                    for x in range(0, WIDTH):
+                        for y in range(0, HEIGHT):
+                            dpg.draw_circle((x*MATRIX_SCALE+MATRIX_OFFSET, y*MATRIX_SCALE+MATRIX_OFFSET), MATRIX_OFFSET, tag=f"{x}x{y}", color=(0, 0, 0, 0), fill=(255, 255, 255, 0))
+
+            with dpg.group():
+                dpg.add_text("Layout")
+                with dpg.group(horizontal=True):
+                    dpg.add_drawlist(width = WIDTH * MATRIX_SCALE, height = HEIGHT * MATRIX_SCALE, tag="widget-layout-parent")
+                    dpg.add_group(horizontal=False, tag="widget-configurations", width=200)
+
+            with dpg.group():
+                dpg.add_text("Add Widget")
+                for widget in widget_manager.widgets.keys():
+                    widget_name = widget_manager.widgets[widget].name
+                    dpg.add_button(label=widget_name, tag="create-" + widget, callback=lambda sender, _: create_widget(widget_manager.widgets[sender.removeprefix("create-")], sender.removeprefix("create-")))
     
+    with dpg.theme() as global_theme:
+
+        with dpg.theme_component(dpg.mvAll):
+            dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 5, category=dpg.mvThemeCat_Core)
+
+    dpg.bind_theme(global_theme)
+    print("ports")
+
     get_active_ports()
+    print("config")
     load_config()
 
-    if not skip_window: 
-        dpg.show_viewport()
-        dpg.start_dearpygui()
-        dpg.destroy_context()
+    def resize_main_window(*_):
+        dpg.configure_item("Main Window", width=dpg.get_viewport_width(), height=dpg.get_viewport_width())
+
+    dpg.set_viewport_resize_callback(resize_main_window)
+    
+
+    dpg.show_viewport()
+    dpg.start_dearpygui()
+    dpg.destroy_context()
 
     matrix_connector.get_sleep() # To wake it up so it doesn't conk out on the first frame
 
@@ -234,7 +271,11 @@ def launch_window(skip_window = False):
 if __name__ == "__main__":
     skip_window = "skip-window" in sys.argv
     while running:
+        print("do it:", skip_window)
         launch_window(skip_window)
         skip_window = False
+        print("finished loop")
+    
+    print("Done?")
     
     matrix_connector.set_sleep(True)

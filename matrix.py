@@ -32,8 +32,6 @@ class Matrix:
         values = []
         for row in self.matrix.tolist():
             values.append(row[column])
-        print("Got column values")
-        print(values)
         return values
     
     def impose(self, matrix: np.matrix, position):
