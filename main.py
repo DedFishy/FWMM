@@ -19,6 +19,7 @@ from widget_layout_object import WidgetObjectLayout
 import sys
 import platform_specific
 from window import Window
+import font_loader # Recognized by freezer
 
 running = True
 is_window_open = False

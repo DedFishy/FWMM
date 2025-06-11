@@ -1,100 +1,26 @@
 from datetime import datetime
+import util
 from widget import Widget as WidgetBase
 from widget_config_item import WidgetConfigItem as Config
 from widget_config_item import ConfigItemType as ConfigType
 from const import WIDTH, HEIGHT
 import numpy as np
+from font_loader import load_preloaded_font, get_fonts
 
-numbers = [
-np.matrix([
-    [1,1,1],
-    [1,0,1],
-    [1,0,1],
-    [1,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [0,1,0],
-    [1,1,0],
-    [0,1,0],
-    [0,1,0],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [0,0,1],
-    [0,1,1],
-    [0,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,0,1],
-    [1,0,1],
-    [1,1,1],
-    [0,0,1],
-    [0,0,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [0,0,1],
-    [0,0,1],
-    [0,0,1],
-    [0,0,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-]),
-]
-colon = np.matrix([
-    [0],
-    [1],
-    [0],
-    [1],
-    [0],
-])
 
 class Widget(WidgetBase):
     name = "Clock"
     allow_rotation = True
     current_render: np.matrix = np.matrix([[]])
     rotation = 0
+    font = None
+    loaded_font_name = None
 
     def __init__(self):
         self.configuration = {
             "Brightness": Config(ConfigType.integer, 255, 0, 255),
-            "Is Twelve Hour (0/1)": Config(ConfigType.integer, 0, 0, 1)
+            "Twelve Hour": Config(ConfigType.boolean, False),
+            "Font": Config(ConfigType.combo, "Medium", options=get_fonts())
         }
 
     def get_current_size(self):
@@ -112,18 +38,17 @@ class Widget(WidgetBase):
         return matrix
     
     def render(self, digit_one, digit_two, digit_three, digit_four):
+        if self.font == None or self.loaded_font_name != self.configuration["Font"].value:
+            self.loaded_font_name = self.configuration["Font"].value
+            self.font = load_preloaded_font(self.loaded_font_name)
         rows = np.matrix([
-            [],
-            [],
-            [],
-            [],
-            []
+            [] for _ in range(0, self.font.get_char_height())
         ])
-        rows = self.append_character(rows, numbers[digit_one], spacing=0)
-        rows = self.append_character(rows, numbers[digit_two])
-        rows = self.append_character(rows, colon)
-        rows = self.append_character(rows, numbers[digit_three])
-        rows = self.append_character(rows, numbers[digit_four])
+        rows = self.append_character(rows, self.font[digit_one], spacing=0)
+        rows = self.append_character(rows, self.font[digit_two])
+        rows = self.append_character(rows, self.font[":"])
+        rows = self.append_character(rows, self.font[digit_three])
+        rows = self.append_character(rows, self.font[digit_four])
         for y in range(0, len(rows)):
             for x in range(0, len(rows[y])):
                 rows[y][x] *= self.configuration["Brightness"].value
@@ -145,17 +70,17 @@ class Widget(WidgetBase):
         digit_four = 0
         current_time = datetime.now()
         hour = current_time.hour
-        if self.configuration["Is Twelve Hour (0/1)"].value:
+        if self.configuration["Twelve Hour"].value:
             hour = self.twentyfour_to_twelve(hour)
         hour = str(hour)
         if len(hour) == 1: digit_two = int(hour)
         else: 
-            digit_one = int(hour[0])
-            digit_two = int(hour[1])
+            digit_one = hour[0]
+            digit_two = hour[1]
 
         minute = str(current_time.minute)
         if len(minute) == 1: digit_four = int(minute)
         else: 
-            digit_three = int(minute[0])
-            digit_four = int(minute[1])
+            digit_three = minute[0]
+            digit_four = minute[1]
         return self.render(digit_one, digit_two, digit_three, digit_four)

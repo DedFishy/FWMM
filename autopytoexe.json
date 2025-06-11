@@ -76,6 +76,10 @@
   {
    "optionDest": "datas",
    "value": "C:/Users/Boyne/Projects/FWMM/OFL.txt;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Boyne/Projects/FWMM/fonts;fonts/"
   }
  ],
  "nonPyinstallerOptions": {

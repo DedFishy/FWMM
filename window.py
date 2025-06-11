@@ -98,7 +98,7 @@ class Window:
     
     def save_widget_layout(self, _, app_data):
     
-        if self.layout_manager.selected_layout_file_path:
+        if app_data["file_path_name"]:
             self.layout_manager.selected_layout_file_path = app_data["file_path_name"]
             self.layout_manager.selected_layout_file_name = app_data["file_name"]
             dpg.set_value("loaded_widget_layout", self.layout_manager.selected_layout_file_name)
@@ -115,7 +115,7 @@ class Window:
 
         print("setup")
 
-        dpg.create_viewport(title="Framework Matrix Manager", width=1000, height=600, small_icon="icon.ico",large_icon="icon.ico", disable_close=True)
+        dpg.create_viewport(title="Framework Matrix Manager", width=1000, height=600, small_icon=util.get_file_path("icon.ico"),large_icon=util.get_file_path("icon.ico"), disable_close=True)
         dpg.set_exit_callback(self.kill_callback)
         print("setup_dearpygui")
         dpg.setup_dearpygui()
