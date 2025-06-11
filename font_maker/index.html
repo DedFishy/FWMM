@@ -71,7 +71,8 @@
         </div>
         <div id="characters">
             <input type="text" id="character-name" placeholder="character name">
-            <button onclick="newCharacter(document.getElementById('character-name').value)">new character</button>
+            <button onclick="newCharacter()">new</button>
+            <button onclick="delCharacter()">delete</button>
             <div>characters:</div>
             <div id="character-list"></div>
         </div>
@@ -80,6 +81,7 @@
             var widthInput = document.getElementById("new-width");
             var heightInput = document.getElementById("new-height");
             var nameInput = document.getElementById("file-name")
+            var charInput = document.getElementById('character-name');
 
             var designerElement = document.getElementById("designer");
             var characterListElement = document.getElementById("character-list");
@@ -87,6 +89,8 @@
 
             var currentFont = {};
             var currentFontName = "";
+            var currentFontWidth = 0;
+            var currentFontHeight = 0;
 
             var currentCharacter = "";
 
@@ -188,6 +192,8 @@
             function makeNew() {
                 currentFont = {};
                 currentFontName = nameInput.value;
+                currentFontWidth = widthInput.value;
+                currentFontHeight  = heightInput.value;
                 fileNameElement.innerText = "current font: " + currentFontName;
                 characterListElement.innerHTML = "";
             }
@@ -201,18 +207,28 @@
             function makeCharButton(character) {
                 const button = document.createElement("button");
                 button.innerText = character;
+                button.id = "button-" + character
                 button.onclick = (e) => {
                     openCharacter(character);
                 }
                 characterListElement.appendChild(button);
             }
 
-            function newCharacter(character) {
+            function newCharacter() {
+
                 saveCurrentCharacter();
-                if (currentCharacter != "") generateJSON(currentCharacter);
-                currentCharacter = character;
-                makeCharButton(character);
-                generateGrid(widthInput.value, heightInput.value);
+                currentCharacter = charInput.value;
+                charInput.value = "";
+                if (Object.keys(currentFont).includes(currentCharacter)) {
+                    return;
+                }
+                makeCharButton(currentCharacter);
+                generateGrid(currentFontWidth, currentFontHeight);
+            }
+
+            function delCharacter() {
+                delete currentFont[currentCharacter];
+                document.getElementById("button-" + currentCharacter).remove();
             }
 
             

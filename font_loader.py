@@ -1,5 +1,7 @@
 import json
+import os
 import numpy as np
+import util
 
 class Font:
     font_dict = {}
@@ -27,3 +29,9 @@ def load_font(path):
     with open(path, "r") as font_file:
         content = json.loads(font_file.read())
     return Font(content)
+
+def load_preloaded_font(font_name):
+    return load_font(util.get_file_path(os.path.join("fonts", font_name))+ ".json")
+
+def get_fonts():
+    return [x.removesuffix(".json") for x in os.listdir(util.get_file_path("fonts"))]

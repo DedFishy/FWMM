@@ -105,6 +105,11 @@ class WidgetObjectLayout:
                             dpg.add_input_intx(**args, size=len(value), min_value=value.minimum, max_value=value.maximum, min_clamped=True, max_clamped=True)
                         elif value.config_item_type == ConfigItemType.float_list:
                             dpg.add_input_floatx(**args, size=len(value), min_value=value.minimum, max_value=value.maximum, min_clamped=True, max_clamped=True)
+                        elif value.config_item_type == ConfigItemType.boolean:
+                            dpg.add_checkbox(**args)
+                        elif value.config_item_type == ConfigItemType.combo:
+                            print(value.options)
+                            dpg.add_combo(value.options, **args)
                         else:
                             raise TypeError("Config item type unaccounted for: " + str(value.config_item_type))
                     

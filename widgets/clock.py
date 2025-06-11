@@ -5,20 +5,22 @@ from widget_config_item import WidgetConfigItem as Config
 from widget_config_item import ConfigItemType as ConfigType
 from const import WIDTH, HEIGHT
 import numpy as np
-from font_loader import load_font
+from font_loader import load_preloaded_font, get_fonts
 
-font = load_font(util.get_file_path("widgets/clock_fonts/Massive Numbers.json"))
 
 class Widget(WidgetBase):
     name = "Clock"
     allow_rotation = True
     current_render: np.matrix = np.matrix([[]])
     rotation = 0
+    font = None
+    loaded_font_name = None
 
     def __init__(self):
         self.configuration = {
             "Brightness": Config(ConfigType.integer, 255, 0, 255),
-            "Is Twelve Hour (0/1)": Config(ConfigType.integer, 0, 0, 1)
+            "Twelve Hour": Config(ConfigType.boolean, False),
+            "Font": Config(ConfigType.combo, "Medium", options=get_fonts())
         }
 
     def get_current_size(self):
@@ -36,14 +38,17 @@ class Widget(WidgetBase):
         return matrix
     
     def render(self, digit_one, digit_two, digit_three, digit_four):
+        if self.font == None or self.loaded_font_name != self.configuration["Font"].value:
+            self.loaded_font_name = self.configuration["Font"].value
+            self.font = load_preloaded_font(self.loaded_font_name)
         rows = np.matrix([
-            [] for _ in range(0, font.get_char_height())
+            [] for _ in range(0, self.font.get_char_height())
         ])
-        rows = self.append_character(rows, font[digit_one], spacing=0)
-        rows = self.append_character(rows, font[digit_two])
-        rows = self.append_character(rows, font[":"])
-        rows = self.append_character(rows, font[digit_three])
-        rows = self.append_character(rows, font[digit_four])
+        rows = self.append_character(rows, self.font[digit_one], spacing=0)
+        rows = self.append_character(rows, self.font[digit_two])
+        rows = self.append_character(rows, self.font[":"])
+        rows = self.append_character(rows, self.font[digit_three])
+        rows = self.append_character(rows, self.font[digit_four])
         for y in range(0, len(rows)):
             for x in range(0, len(rows[y])):
                 rows[y][x] *= self.configuration["Brightness"].value
@@ -65,7 +70,7 @@ class Widget(WidgetBase):
         digit_four = 0
         current_time = datetime.now()
         hour = current_time.hour
-        if self.configuration["Is Twelve Hour (0/1)"].value:
+        if self.configuration["Twelve Hour"].value:
             hour = self.twentyfour_to_twelve(hour)
         hour = str(hour)
         if len(hour) == 1: digit_two = int(hour)

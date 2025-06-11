@@ -6,6 +6,8 @@ class ConfigItemType(Enum):
     float = 2
     integer_list = 3
     float_list = 4
+    boolean = 5
+    combo = 6
 
 class WidgetConfigItem:
     value = None
@@ -14,9 +16,11 @@ class WidgetConfigItem:
 
     minimum: int = 0
     maximum: int = 0
+    options: list = []
 
-    def __init__(self, type: ConfigItemType, value, minimum=0, maximum=0):
+    def __init__(self, type: ConfigItemType, value, minimum=0, maximum=0, options=[]):
         self.value = value
         self.minimum = minimum
         self.maximum = maximum
         self.config_item_type = type
+        self.options = options
