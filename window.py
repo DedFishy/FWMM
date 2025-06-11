@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import threading
 from typing import Callable
@@ -11,6 +12,7 @@ from layout_manager import LayoutManager
 from matrix import Matrix
 from matrix_connector import MatrixConnector
 from platform_specific import PlatformSpecificFunctions
+import util
 from widget import Widget
 from widget_manager import WidgetManager
 
@@ -26,6 +28,7 @@ class Window:
 
     send_to_tray = None
     kill_callback = None
+    update_window_open = None
 
     def __init__(
             self, 
@@ -36,7 +39,8 @@ class Window:
             platform_specific_functions: PlatformSpecificFunctions,
             config: Config,
             send_to_tray_callback: Callable,
-            kill_callback: Callable
+            kill_callback: Callable,
+            update_window_open: Callable
         ):
         self.layout_manager = layout_manager
         self.widget_manager = widget_manager
@@ -46,6 +50,7 @@ class Window:
         self.config = config
         self.send_to_tray = send_to_tray_callback
         self.kill_callback = kill_callback
+        self.update_window_open = update_window_open
 
     def set_preview_pixel(self, x, y, value):
         dpg.configure_item(f"{x}x{y}", fill=(255, 255, 255, value))
@@ -60,7 +65,7 @@ class Window:
             for x in range(0, WIDTH):
                 self.set_preview_pixel(x, y, self.matrix_rep.get_led(x, y))
     
-    def create_widget(self, widget, import_name, is_loaded=False, position=None, rotation=None, color=None, config=None):
+    def create_widget(self, widget, import_name, is_loaded=False, position=None, rotation=None, color=None, config=None, rerender=True):
         widget_instance: Widget = widget()
         widget_instance.import_name = import_name
         if is_loaded:
@@ -69,9 +74,10 @@ class Window:
             for field in config.keys():
                 widget_instance.configuration[field].value = config[field]
         self.layout_manager.add_widget(widget_instance, color + [255] if color is not None else None)
-        self.layout_manager.render()
-        self.matrix_connector.flush_matrix()
-        self.update_matrix_preview()
+        if rerender:
+            self.layout_manager.render()
+            self.matrix_connector.flush_matrix()
+            self.update_matrix_preview()
 
     def load_widget_layout(self, _, app_data):
         if app_data["file_path_name"]:
@@ -82,9 +88,13 @@ class Window:
                 layout = json.loads(file.read())
                 self.layout_manager.remove_all()
                 for widget in layout["widgets"]:
-                    self.create_widget(self.widget_manager.widgets[widget["import_name"]], widget["import_name"], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"])
+                    self.create_widget(self.widget_manager.widgets[widget["import_name"]], widget["import_name"], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"], rerender=False)
             dpg.configure_item("widget_layout_file_namer", default_path=Path(self.layout_manager.selected_layout_file_path).parent, default_filename = self.layout_manager.selected_layout_file_name)
             print(self.layout_manager.selected_layout_file_path)
+        self.resize_main_window()
+        self.layout_manager.render()
+        self.matrix_connector.flush_matrix()
+        self.update_matrix_preview()
     
     def save_widget_layout(self, _, app_data):
     
@@ -101,7 +111,7 @@ class Window:
         dpg.create_context()
 
         with dpg.font_registry():
-            default_font = dpg.add_font("assets/font.ttf", 20)
+            default_font = dpg.add_font(util.get_file_path("font.ttf"), 20)
 
         print("setup")
 
@@ -161,11 +171,17 @@ class Window:
 
             with dpg.theme_component(dpg.mvAll):
                 dpg.add_theme_style(dpg.mvStyleVar_FrameRounding, 5, category=dpg.mvThemeCat_Core)
+        
 
         dpg.bind_theme(global_theme)
-        print("ports")
+
+        dpg.set_viewport_resize_callback(self.resize_main_window)
+    
+    def resize_main_window(self, *_):
+        dpg.configure_item("Main Window", width=dpg.get_viewport_width(), height=dpg.get_viewport_width())
     
     def start(self):
+        self.update_window_open(True)
         dpg.show_viewport()
         handles = getWindowsWithTitle(dpg.get_viewport_title())
         print("Handles", handles)
@@ -178,7 +194,9 @@ class Window:
         self.thread.start()
 
     def hide(self):
+        self.update_window_open(False)
         self.window_handle.hide(True)
     
     def show(self):
+        self.update_window_open(True)
         self.window_handle.show(True)

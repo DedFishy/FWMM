@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Font Maker</title>
+
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                background-color: black;
+                color: white;
+                font-family: monospace;
+                height: 100dvh;
+                padding: 0;
+                margin: 0;
+                width: 100vw;
+            }
+            #controls {
+                display: flex;
+                flex-direction: row;
+            }
+            #controls * {
+                margin-left: 2px;
+                margin-right: 2px;
+            }
+            #designer {
+                flex-grow: 1;
+                overflow: scroll;
+            }
+            #designer .pixel {
+                width: 50px;
+                min-width: 50px;
+                height: 50px;
+                border: 5px solid white;
+                margin: 5px;
+            }
+            #designer .pixel.filled {
+                background-color: white;
+            }
+            #designer .row {
+                display: flex;
+                flex-direction: row;
+            }
+            #characters {
+                display: flex;
+                flex-direction: row;
+                
+            }
+            #character-list {
+                flex-grow: 1;
+                overflow: scroll;
+            }
+            input {
+                width: 4em;
+            }
+        </style>
+    </head>
+
+    <body ondrop="importJSON(event)" ondragover="event.preventDefault()">
+        <div id="controls">
+            <button onclick="exportJSON()">export</button>
+            <button onclick="makeNew()">make new</button>
+            <input type="text" id="new-width" placeholder="width">
+            x
+            <input type="text" id="new-height" placeholder="height">
+            <input type="text" id="file-name" placeholder="name">
+            <div id="file-name-display"></div>
+        </div>
+        <div id="designer">
+
+        </div>
+        <div id="characters">
+            <input type="text" id="character-name" placeholder="character name">
+            <button onclick="newCharacter(document.getElementById('character-name').value)">new character</button>
+            <div>characters:</div>
+            <div id="character-list"></div>
+        </div>
+
+        <script type="text/javascript">
+            var widthInput = document.getElementById("new-width");
+            var heightInput = document.getElementById("new-height");
+            var nameInput = document.getElementById("file-name")
+
+            var designerElement = document.getElementById("designer");
+            var characterListElement = document.getElementById("character-list");
+            var fileNameElement = document.getElementById("file-name-display")
+
+            var currentFont = {};
+            var currentFontName = "";
+
+            var currentCharacter = "";
+
+            function download(filename, text) {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+            }
+
+            function importJSON(ev) {
+                ev.preventDefault();
+                if (ev.dataTransfer.items) {
+                    importJSONFile(ev.dataTransfer.items[0]);
+                } else {
+                    importJSONFile(ev.dataTransfer.files[0]);
+                }
+            }
+
+            function importJSONFile(file) {
+
+                characterListElement.innerHTML = "";
+                
+                if (file["kind"] != "file") return;
+                console.log(file);
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    currentFont = (JSON.parse(event.target.result));
+                    Object.keys(currentFont).forEach((value, index, array) => {
+                        makeCharButton(value);
+                    })
+                }
+                reader.readAsText(file.getAsFile());
+                var name = file.getAsFile().name;
+                if (name.endsWith(".json")) name = name.substring(0, name.length-5)
+                currentFontName = name;
+                fileNameElement.innerText = "current font: " + name;
+            }
+
+            function exportJSON() {
+                saveCurrentCharacter();
+                download(currentFontName + ".json", JSON.stringify(currentFont))
+            }
+
+            function saveCurrentCharacter() {
+                if (currentCharacter != "") generateJSON(currentCharacter);
+            }
+
+            function generateGrid(width, height, content=undefined) {
+                designerElement.innerHTML = "";
+                for (let y = 0; y < height; y++) {
+                    var row = document.createElement("div");
+                    row.className = "row";
+                    for (let x = 0; x < width; x++) {
+                        var pixel = document.createElement("div");
+                        pixel.setAttribute("pixelX", x) ;
+                        pixel.setAttribute("pixelY", y);
+                        pixel.className = "pixel";
+                        pixel.onclick = (e) => {
+                            e.target.classList.toggle("filled");
+                        }
+                        row.appendChild(pixel);
+                        if (content && content[y][x]) {
+                            pixel.classList.toggle("filled");
+                        }
+                    }
+                    designerElement.appendChild(row)
+                }
+            }
+
+            function generateJSON(characterName) {
+                currentFont[characterName] = [];
+                const pixels = document.getElementsByClassName("pixel")
+                for(let pixelIndex in pixels) {
+                    pixel = pixels[pixelIndex];
+                    if (typeof(pixel) != "object") continue;
+                    pixelX = pixel.getAttribute("pixelX");
+                    pixelY = pixel.getAttribute("pixelY");
+                    while (currentFont[characterName][pixelY] == undefined) {
+                        currentFont[characterName].push([])
+                        console.log(currentFont)
+                    }
+                    while (currentFont[characterName][pixelY][pixelX] == undefined) {
+                        currentFont[characterName][pixelY].push(false)
+                        console.log(currentFont)
+                    }
+                    currentFont[characterName][pixelY][pixelX] = pixel.classList.contains("filled") ? 1 : 0;
+                        
+                }
+                
+            }
+
+            function makeNew() {
+                currentFont = {};
+                currentFontName = nameInput.value;
+                fileNameElement.innerText = "current font: " + currentFontName;
+                characterListElement.innerHTML = "";
+            }
+
+            function openCharacter(character) {
+                saveCurrentCharacter();
+                currentCharacter = character;
+                generateGrid(widthInput.value, heightInput.value, currentFont[character]);
+            }
+
+            function makeCharButton(character) {
+                const button = document.createElement("button");
+                button.innerText = character;
+                button.onclick = (e) => {
+                    openCharacter(character);
+                }
+                characterListElement.appendChild(button);
+            }
+
+            function newCharacter(character) {
+                saveCurrentCharacter();
+                if (currentCharacter != "") generateJSON(currentCharacter);
+                currentCharacter = character;
+                makeCharButton(character);
+                generateGrid(widthInput.value, heightInput.value);
+            }
+
+            
+        </script>
+    </body>
+</html>

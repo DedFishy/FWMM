@@ -84,7 +84,13 @@ class MatrixConnector:
 
    def send_command(self, command_id, parameters, with_response=False, length: int = 32):
 
-      self.CONNECTION.write([self.MAGIC_BYTE_A, self.MAGIC_BYTE_B, command_id] + parameters)
+      succeeded = False
+      while not succeeded:
+         try: 
+            self.CONNECTION.write([self.MAGIC_BYTE_A, self.MAGIC_BYTE_B, command_id] + parameters)
+            succeeded = True
+         except serial.SerialTimeoutException: 
+            print("Failed to write")
 
       
 

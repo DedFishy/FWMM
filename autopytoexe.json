@@ -1,0 +1,85 @@
+{
+ "version": "auto-py-to-exe-configuration_v1",
+ "pyinstallerOptions": [
+  {
+   "optionDest": "noconfirm",
+   "value": true
+  },
+  {
+   "optionDest": "filenames",
+   "value": "C:/Users/Boyne/Projects/FWMM/main.py"
+  },
+  {
+   "optionDest": "onefile",
+   "value": false
+  },
+  {
+   "optionDest": "console",
+   "value": false
+  },
+  {
+   "optionDest": "icon_file",
+   "value": "C:/Users/Boyne/Projects/FWMM/icon.ico"
+  },
+  {
+   "optionDest": "name",
+   "value": "FWMM"
+  },
+  {
+   "optionDest": "clean_build",
+   "value": false
+  },
+  {
+   "optionDest": "strip",
+   "value": false
+  },
+  {
+   "optionDest": "noupx",
+   "value": false
+  },
+  {
+   "optionDest": "disable_windowed_traceback",
+   "value": false
+  },
+  {
+   "optionDest": "uac_admin",
+   "value": false
+  },
+  {
+   "optionDest": "uac_uiaccess",
+   "value": false
+  },
+  {
+   "optionDest": "argv_emulation",
+   "value": false
+  },
+  {
+   "optionDest": "bootloader_ignore_signals",
+   "value": false
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Boyne/Projects/FWMM/widgets;./widgets/"
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Boyne/Projects/FWMM/icon.ico;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Boyne/Projects/FWMM/icon.png;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Boyne/Projects/FWMM/font.ttf;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Boyne/Projects/FWMM/OFL.txt;."
+  }
+ ],
+ "nonPyinstallerOptions": {
+  "increaseRecursionLimit": true,
+  "manualArguments": ""
+ }
+}

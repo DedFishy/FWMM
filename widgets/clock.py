@@ -1,89 +1,13 @@
 from datetime import datetime
+import util
 from widget import Widget as WidgetBase
 from widget_config_item import WidgetConfigItem as Config
 from widget_config_item import ConfigItemType as ConfigType
 from const import WIDTH, HEIGHT
 import numpy as np
+from font_loader import load_font
 
-numbers = [
-np.matrix([
-    [1,1,1],
-    [1,0,1],
-    [1,0,1],
-    [1,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [0,1,0],
-    [0,1,0],
-    [0,1,0],
-    [0,1,0],
-    [0,1,0],
-]),
-np.matrix([
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [0,0,1],
-    [0,1,1],
-    [0,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,0,1],
-    [1,0,1],
-    [1,1,1],
-    [0,0,1],
-    [0,0,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,0],
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [0,0,1],
-    [0,0,1],
-    [0,0,1],
-    [0,0,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-]),
-np.matrix([
-    [1,1,1],
-    [1,0,1],
-    [1,1,1],
-    [0,0,1],
-    [1,1,1],
-]),
-]
-colon = np.matrix([
-    [0],
-    [1],
-    [0],
-    [1],
-    [0],
-])
+font = load_font(util.get_file_path("widgets/clock_fonts/Massive Numbers.json"))
 
 class Widget(WidgetBase):
     name = "Clock"
@@ -113,17 +37,13 @@ class Widget(WidgetBase):
     
     def render(self, digit_one, digit_two, digit_three, digit_four):
         rows = np.matrix([
-            [],
-            [],
-            [],
-            [],
-            []
+            [] for _ in range(0, font.get_char_height())
         ])
-        rows = self.append_character(rows, numbers[digit_one], spacing=0)
-        rows = self.append_character(rows, numbers[digit_two])
-        rows = self.append_character(rows, colon)
-        rows = self.append_character(rows, numbers[digit_three])
-        rows = self.append_character(rows, numbers[digit_four])
+        rows = self.append_character(rows, font[digit_one], spacing=0)
+        rows = self.append_character(rows, font[digit_two])
+        rows = self.append_character(rows, font[":"])
+        rows = self.append_character(rows, font[digit_three])
+        rows = self.append_character(rows, font[digit_four])
         for y in range(0, len(rows)):
             for x in range(0, len(rows[y])):
                 rows[y][x] *= self.configuration["Brightness"].value
@@ -150,12 +70,12 @@ class Widget(WidgetBase):
         hour = str(hour)
         if len(hour) == 1: digit_two = int(hour)
         else: 
-            digit_one = int(hour[0])
-            digit_two = int(hour[1])
+            digit_one = hour[0]
+            digit_two = hour[1]
 
         minute = str(current_time.minute)
         if len(minute) == 1: digit_four = int(minute)
         else: 
-            digit_three = int(minute[0])
-            digit_four = int(minute[1])
+            digit_three = minute[0]
+            digit_four = minute[1]
         return self.render(digit_one, digit_two, digit_three, digit_four)

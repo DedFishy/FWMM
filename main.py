@@ -21,6 +21,7 @@ import platform_specific
 from window import Window
 
 running = True
+is_window_open = False
 
 config = Config()
 
@@ -38,13 +39,14 @@ def flush_layout_manager():
 layout_manager = LayoutManager(matrix_rep, lambda: flush_layout_manager())
 
 
-icon_image = Image.open("icon.png")
+icon_image = Image.open(util.get_file_path("icon.png"))
 
 def send_to_tray(*_):
     window.hide()
     icon.visible = True
 
 def kill():
+        dpg.stop_dearpygui()
         dpg.destroy_context()
         icon.stop()
 
@@ -52,7 +54,11 @@ def reveal_from_tray():
     icon.visible = False
     window.show()
 
-window = Window(layout_manager, widget_manager, matrix_connector, matrix_rep, platform_specific_functions, config, send_to_tray, kill)
+def update_is_window_open(is_open):
+    global is_window_open
+    is_window_open = is_open
+
+window = Window(layout_manager, widget_manager, matrix_connector, matrix_rep, platform_specific_functions, config, send_to_tray, kill, update_is_window_open)
 
 icon = pystray.Icon("FWMM", icon_image, "Framework Matrix Manager", menu=pystray.Menu(
         pystray.MenuItem("Open Window", reveal_from_tray, default=True),
@@ -109,14 +115,18 @@ def matrix_update_loop():
     print("Starting rendering loop at SPF=", spf)
     seconds_to_next_frame = spf
     while running:
+        while is_window_open: time.sleep(0.05)
         print("Sitting around")
         time.sleep(1)
         seconds_to_next_frame -= 1
         if (seconds_to_next_frame <= 0):
             print("Rendering next frame")
-            layout_manager.render()
-            matrix_connector.flush_matrix()
-            seconds_to_next_frame = layout_manager.get_desired_spf()
+            try:
+                layout_manager.render()
+                matrix_connector.flush_matrix()
+                seconds_to_next_frame = layout_manager.get_desired_spf()
+            except Exception as e:
+                print("Failed to write to serial:", e)
 
 def main():
     skip_window = "skip-window" in sys.argv
@@ -134,7 +144,7 @@ def main():
         notification.notify(
             title="Couldn't connect to LED matrix",
             message=str(error),
-            app_icon="icon.ico"
+            app_icon=util.get_file_path("icon.ico")
         )
         dpg.destroy_context()
         raise SystemExit
