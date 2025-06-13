@@ -27,7 +27,7 @@ class WidgetObjectLayout:
     
     def get_current_size(self):
         size = self.widget.get_current_size()
-        if self.widget.rotation == 90 or self.widget.rotation == 180: size.reverse()
+        if self.widget.rotation == 90 or self.widget.rotation == 270: size.reverse()
         return size
     
     def create_first_widget_bounds(self):
