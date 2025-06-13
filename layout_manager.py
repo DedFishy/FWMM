@@ -1,7 +1,4 @@
 import numpy as np
-from const import HEIGHT, WIDTH
-from matrix import Matrix
-from widget import Widget
 from matrix import Matrix
 from widget import Widget
 from widget_layout_object import WidgetObjectLayout
