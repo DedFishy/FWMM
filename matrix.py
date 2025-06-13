@@ -1,5 +1,6 @@
 import numpy as np
 from const import WIDTH, HEIGHT
+import util
 
 class Matrix:
 
@@ -35,32 +36,7 @@ class Matrix:
         return values
     
     def impose(self, matrix: np.matrix, position):
-        top_left_bound_abs = (
-            max(position[1], 0),
-            max(position[0], 0)
-        )
-        bottom_right_bound_abs = (
-            min(position[1] + matrix.shape[0], self.matrix.shape[0]),
-            min(position[0] + matrix.shape[1], self.matrix.shape[1])
-        )
-        top_left_bound_rel = (
-            max(top_left_bound_abs[0] - position[1], 0),
-            max(top_left_bound_abs[1] - position[0], 0),
-        )
-        bottom_right_bound_rel = (
-            min(bottom_right_bound_abs[0] - position[1], self.matrix.shape[0]),
-            min(bottom_right_bound_abs[1] - position[0], self.matrix.shape[1])
-        )
-
-        if (
-            bottom_right_bound_abs[0] < 0 or
-            bottom_right_bound_abs[1] < 0 or
-            top_left_bound_abs[0] > self.matrix.shape[0] or
-            top_left_bound_abs[1] > self.matrix.shape[1]
-        ):
-            print("Out of frame")
-            return
-        self.matrix[top_left_bound_abs[0]:bottom_right_bound_abs[0], top_left_bound_abs[1]:bottom_right_bound_abs[1]] = matrix[top_left_bound_rel[0]:bottom_right_bound_rel[0], top_left_bound_rel[1]:bottom_right_bound_rel[1]]
+        self.matrix = util.impose(self.matrix, matrix, position)
 
 if __name__ == "__main__":
     matrix = Matrix(255)

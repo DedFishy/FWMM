@@ -112,20 +112,25 @@ def load_config():
 
 
 def matrix_update_loop():
-    spf = 0
+    spf = layout_manager.get_desired_spf()
     print("Starting rendering loop at SPF=", spf)
-    seconds_to_next_frame = spf
     while running:
-        while is_window_open: time.sleep(0.05)
+        if spf == -1: continue
+        while is_window_open: 
+            time.sleep(0.1) # Stop this loop until the window is hidden
+            start_time = time.time()
+            spf = layout_manager.get_desired_spf()
         print("Sitting around")
-        time.sleep(1)
-        seconds_to_next_frame -= 1
-        if (seconds_to_next_frame <= 0):
+        
+        time.sleep(0.25)
+        seconds_elapsed = time.time() - start_time
+        if (seconds_elapsed >= spf):
+            start_time = time.time()
             print("Rendering next frame")
             try:
                 layout_manager.render()
                 matrix_connector.flush_matrix()
-                seconds_to_next_frame = layout_manager.get_desired_spf()
+                spf = layout_manager.get_desired_spf()
             except Exception as e:
                 print("Failed to write to serial:", e)
 
@@ -147,6 +152,7 @@ def main():
             message=str(error),
             app_icon=util.get_file_path("icon.ico")
         )
+        dpg.stop_dearpygui()
         dpg.destroy_context()
         raise SystemExit
     
@@ -180,6 +186,7 @@ if __name__ == "__main__":
                 title="FWMM has encountered an error",
                 message=str(e)
             )
+            dpg.stop_dearpygui()
             dpg.destroy_context()
             icon.stop()
             window.thread.join(0)

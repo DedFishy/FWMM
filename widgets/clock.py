@@ -24,7 +24,7 @@ class Widget(WidgetBase):
         }
 
     def get_current_size(self):
-        return (self.current_render.shape[1], self.current_render.shape[0])
+        return [self.current_render.shape[1], self.current_render.shape[0]]
     
     def get_desired_spf(self):
         return 30
@@ -52,9 +52,6 @@ class Widget(WidgetBase):
         for y in range(0, len(rows)):
             for x in range(0, len(rows[y])):
                 rows[y][x] *= self.configuration["Brightness"].value
-        
-        if self.allow_rotation and self.rotation != 0:
-            rows = np.rot90(rows, self.rotation // 90)
         self.current_render = rows
         return rows
 

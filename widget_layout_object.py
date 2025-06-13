@@ -25,11 +25,16 @@ class WidgetObjectLayout:
     def get_tag(self):
         return "widget-" + str(self.widget_id)
     
+    def get_current_size(self):
+        size = self.widget.get_current_size()
+        if self.widget.rotation == 90 or self.widget.rotation == 180: size.reverse()
+        return size
+    
     def create_first_widget_bounds(self):
         return (self.widget.position[0] * MATRIX_SCALE, self.widget.position[1] * MATRIX_SCALE)
 
     def create_second_widget_bounds(self):
-        return ((self.widget.position[0] + self.widget.get_current_size()[0]) * MATRIX_SCALE, (self.widget.position[1] + self.widget.get_current_size()[1]) * MATRIX_SCALE)
+        return ((self.widget.position[0] + self.get_current_size()[0]) * MATRIX_SCALE, (self.widget.position[1] + self.get_current_size()[1]) * MATRIX_SCALE)
     
     def update_config_value(self, sender, app_data):
         config_item = dpg.get_item_configuration(sender)["label"]
@@ -55,6 +60,18 @@ class WidgetObjectLayout:
 
     def move(self, _, app_data):
         self.widget.position = app_data[:2]
+        self.layout_manager.render()
+        self.update()
+        self.layout_manager.flush_callback()
+
+    def move_manual(self, is_x, is_add):
+        print(is_x, is_add)
+        addition = 1 if is_add else -1
+        if is_x:
+            self.widget.position[0] += addition
+        else:
+            self.widget.position[1] += addition
+        dpg.set_value(self.get_tag() + "-positioning", self.widget.position)
         self.layout_manager.render()
         self.update()
         self.layout_manager.flush_callback()
@@ -88,7 +105,14 @@ class WidgetObjectLayout:
                     dpg.add_button(label = "Delete", callback = self.remove)
                 with dpg.group(show=self.showing_config, tag=self.get_tag() + "-config-collapse"):
                     dpg.add_text("Transformation")
-                    dpg.add_input_intx(label="Position", size=2, callback=self.move, default_value=self.widget.position)
+                    dpg.add_input_intx(label="Position", size=2, callback=self.move, default_value=self.widget.position, tag = self.get_tag() + "-positioning")
+                    with dpg.group(horizontal=True):
+                        dpg.add_text("X:")
+                        dpg.add_button(label="+", callback=lambda *_: self.move_manual(True, True), width=10)
+                        dpg.add_button(label="-", callback=lambda *_: self.move_manual(True, False), width=10)
+                        dpg.add_text("Y:")
+                        dpg.add_button(label="+", callback=lambda *_: self.move_manual(False, True), width=10)
+                        dpg.add_button(label="-", callback=lambda *_: self.move_manual(False, False), width=10)
                     if self.widget.allow_rotation:
                         dpg.add_combo([0, 90, 180, 270], label="Rotation (deg)", callback=self.rotate, default_value=self.widget.rotation)
                     dpg.add_text("Configuration")

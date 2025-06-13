@@ -69,6 +69,8 @@ class LayoutManager:
 
     def render_widget(self, widget: WidgetObjectLayout):
         widget_pixels: np.matrix = widget.widget.get_frame()
+        if widget.widget.allow_rotation and widget.widget.rotation != 0:
+            widget_pixels = np.rot90(widget_pixels, widget.widget.rotation // 90)
         if type(widget_pixels) == list:
             widget_pixels = np.matrix(widget_pixels)
 
