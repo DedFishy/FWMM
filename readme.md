@@ -1,4 +1,5 @@
 # Framework Matrix Manager
+![Demonstrative Photo](https://github.com/DedFishy/FWMM/blob/main/photo.png?raw=true)
 A utility to customize what is displayed on your Framework 16 LED matrix module using a widget-based system
 
 NOTE: I am working on this project for [Hack Club Shipwrecked](https://shipwrecked.hackclub.com/), so if you would give this project a star, it would help me out a lot!
