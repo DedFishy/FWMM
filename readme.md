@@ -33,7 +33,9 @@ If you simply close the FWMM window, the entire application will stop. To let yo
 - `numpy`
 - `pystray`
 - `pywinctl`
+
 On Windows:
+
 - `winshell`
 
 ## Creating new widgets
