@@ -58,20 +58,11 @@ class WidgetObjectLayout:
             self.color[i] = int(self.color[i])
         self.update()
 
-    def move(self, _, app_data):
-        self.widget.position = app_data[:2]
-        self.layout_manager.render()
-        self.update()
-        self.layout_manager.flush_callback()
-
-    def move_manual(self, is_x, is_add):
-        print(is_x, is_add)
-        addition = 1 if is_add else -1
+    def move_manual(self, is_x, value):
         if is_x:
-            self.widget.position[0] += addition
+            self.widget.position[0] = value
         else:
-            self.widget.position[1] += addition
-        dpg.set_value(self.get_tag() + "-positioning", self.widget.position)
+            self.widget.position[1] = value
         self.layout_manager.render()
         self.update()
         self.layout_manager.flush_callback()
@@ -105,14 +96,8 @@ class WidgetObjectLayout:
                     dpg.add_button(label = "Delete", callback = self.remove)
                 with dpg.group(show=self.showing_config, tag=self.get_tag() + "-config-collapse"):
                     dpg.add_text("Transformation")
-                    dpg.add_input_intx(label="Position", size=2, callback=self.move, default_value=self.widget.position, tag = self.get_tag() + "-positioning")
-                    with dpg.group(horizontal=True):
-                        dpg.add_text("X:")
-                        dpg.add_button(label="+", callback=lambda *_: self.move_manual(True, True), width=10)
-                        dpg.add_button(label="-", callback=lambda *_: self.move_manual(True, False), width=10)
-                        dpg.add_text("Y:")
-                        dpg.add_button(label="+", callback=lambda *_: self.move_manual(False, True), width=10)
-                        dpg.add_button(label="-", callback=lambda *_: self.move_manual(False, False), width=10)
+                    dpg.add_input_int(label="X", callback=lambda _, app_data: self.move_manual(True, app_data), tag=self.get_tag() + "-pos-x")
+                    dpg.add_input_int(label="Y", callback=lambda _, app_data: self.move_manual(False, app_data), tag=self.get_tag() + "-pos-y")
                     if self.widget.allow_rotation:
                         dpg.add_combo([0, 90, 180, 270], label="Rotation (deg)", callback=self.rotate, default_value=self.widget.rotation)
                     dpg.add_text("Configuration")
@@ -136,6 +121,8 @@ class WidgetObjectLayout:
                             dpg.add_combo(value.options, **args)
                         else:
                             raise TypeError("Config item type unaccounted for: " + str(value.config_item_type))
+        
+        self.update()
                     
     
     def update(self):
@@ -145,3 +132,12 @@ class WidgetObjectLayout:
             pmin = self.create_first_widget_bounds(), 
             pmax = self.create_second_widget_bounds(),
             fill = self.color)
+        
+        dpg.set_value(
+            self.get_tag() + "-pos-x",
+            self.widget.position[0]
+        )
+        dpg.set_value(
+            self.get_tag() + "-pos-y",
+            self.widget.position[1]
+        )
