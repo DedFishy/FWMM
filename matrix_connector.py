@@ -57,23 +57,25 @@ GAME_CONTROLS = {
 }
 
 class MatrixConnector:
-   CONNECTION: serial.Serial = None
+   CONNECTION: serial.Serial
    PORT = "COM3"
    BAUD_RATE = 115200
    MAGIC_BYTE_A = 0x32
    MAGIC_BYTE_B = 0xAC
 
-   def __init__(self, matrix, port: str = None):
+   def __init__(self, matrix, port: str|None = None):
      if port: self.PORT = port
 
      self.matrix = matrix
 
    def is_connected(self):
-      if not self.CONNECTION:
-         return False
-      return self.CONNECTION.is_open
+      try:
+         if not self.CONNECTION:
+            return False
+         return self.CONNECTION.is_open
+      except AttributeError: return False
      
-   def connect(self, port: str = None):
+   def connect(self, port: str|None = None):
       self.CONNECTION = serial.Serial(
            port if port != None else self.PORT,
            self.BAUD_RATE
@@ -82,24 +84,33 @@ class MatrixConnector:
    def close(self):
       self.CONNECTION.close()
 
-   def send_command(self, command_id, parameters, with_response=False, length: int = 32):
+   def send_command(self, command_id, parameters, length: int = 32) -> None:
 
       succeeded = False
       while not succeeded:
          try: 
-            self.CONNECTION.write([self.MAGIC_BYTE_A, self.MAGIC_BYTE_B, command_id] + parameters)
+            if self.CONNECTION: self.CONNECTION.write([self.MAGIC_BYTE_A, self.MAGIC_BYTE_B, command_id] + parameters)
+            succeeded = True
+         except serial.SerialTimeoutException: 
+            print("Failed to write")
+   
+   def send_command_with_response(self, command_id, parameters, length: int|None = 32) -> bytes:
+
+      succeeded = False
+      while not succeeded:
+         try: 
+            if self.CONNECTION: self.CONNECTION.write([self.MAGIC_BYTE_A, self.MAGIC_BYTE_B, command_id] + parameters)
             succeeded = True
          except serial.SerialTimeoutException: 
             print("Failed to write")
 
-      
-
-      if with_response:
-         if length == None:
-            res = self.CONNECTION.read_all()
-         else:
-            res = self.CONNECTION.read(length)
+      if length == None:
+         res = self.CONNECTION.read_all()
+      else:
+         res = self.CONNECTION.read(length)
+      if res:
          return res
+      return b''
     
    def eval_boolean_returned(self, command_response: bytes) -> bool:
       return bool(command_response[0])
@@ -111,7 +122,7 @@ class MatrixConnector:
       assert 0 <= brightness <= 255
       self.send_command(COMMANDS["brightness"], [brightness])
 
-   def set_pattern(self, pattern: bytes, percentage: int = None):
+   def set_pattern(self, pattern: bytes, percentage: int = 100):
       assert (
          pattern != PATTERNS["percentage"] and percentage == None or
          pattern == PATTERNS["percentage"] and 0 <= percentage <= 100
@@ -130,13 +141,13 @@ class MatrixConnector:
    Get whether the LED Matrix is sleeping. This seems to have freaky behavior, don't use it probably.
    """
    def get_sleep(self) -> bool:
-      return self.eval_boolean_returned(self.send_command(COMMANDS["sleep"], [], True))
+      return self.eval_boolean_returned(self.send_command_with_response(COMMANDS["sleep"], [], True))
    
    def set_is_animating(self, animating: bool):
       self.send_command(COMMANDS["animate"], [animating])
 
    def get_is_animating(self):
-      return self.eval_boolean_returned(self.send_command(COMMANDS["animate"], [], True))
+      return self.eval_boolean_returned(self.send_command_with_response(COMMANDS["animate"], [], True))
    
    def panic(self):
       self.send_command(COMMANDS["panic"], [])
@@ -160,7 +171,7 @@ class MatrixConnector:
       self.send_command(COMMANDS["gamecontrol"], [command])
 
    def get_game_status(self):
-      return self.send_command(COMMANDS["gamestatus"], [], True, None)
+      return self.send_command_with_response(COMMANDS["gamestatus"], [], None)
    
    def decode_game_status(self, status: bytes):
       status_str = status.decode("ascii").splitlines()
@@ -203,6 +214,6 @@ class MatrixConnector:
 
 # Go to sleep and check the status
 if __name__ == "__main__":
-   matrix = MatrixConnector()
+   matrix = MatrixConnector(Matrix())
 
       

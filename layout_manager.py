@@ -1,3 +1,4 @@
+from typing import Callable
 import numpy as np
 from matrix import Matrix
 from widget import Widget
@@ -5,13 +6,13 @@ from widget_layout_object import WidgetObjectLayout
 
 class LayoutManager:
     widgets: list[WidgetObjectLayout] = []
-    matrix: Matrix = None
-    flush_callback = None
+    matrix: Matrix
+    flush_callback: Callable
 
     selected_layout_file_path = None
     selected_layout_file_name = None
 
-    def __init__(self, matrix: Matrix, flush_callback):
+    def __init__(self, matrix: Matrix, flush_callback: Callable):
         self.matrix = matrix
         self.flush_callback = flush_callback
 
@@ -65,10 +66,14 @@ class LayoutManager:
             self.render_widget(widget)
 
     def render_widget(self, widget: WidgetObjectLayout):
-        widget_pixels: np.matrix = widget.widget.get_frame()
+        widget_pixels_untyped: np.matrix|list = widget.widget.get_frame()
+        if type(widget_pixels_untyped) == list:
+            widget_pixels: np.matrix = np.matrix(widget_pixels_untyped)
+        elif type(widget_pixels_untyped) == np.matrix:
+            widget_pixels = widget_pixels_untyped
+
         if widget.widget.allow_rotation and widget.widget.rotation != 0:
-            widget_pixels = np.rot90(widget_pixels, widget.widget.rotation // 90)
-        if type(widget_pixels) == list:
-            widget_pixels = np.matrix(widget_pixels)
+            widget_pixels = np.rot90(widget_pixels, widget.widget.rotation // 90) # type: ignore
+        
 
         self.matrix.impose(widget_pixels, widget.widget.position)

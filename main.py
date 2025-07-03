@@ -1,9 +1,6 @@
 from pathlib import Path
 import time
 from PIL import Image
-import dearpygui.dearpygui as dpg
-from plyer import notification
-import pystray
 from config import Config
 import util
 import detect
@@ -16,11 +13,17 @@ from layout_manager import LayoutManager
 from widget_layout_object import WidgetObjectLayout
 import sys
 import platform_specific
-from window import Window
+from flask import Flask, render_template, send_file, send_from_directory
+from flask_socketio import SocketIO
+import webbrowser
+import os
 import font_loader # Recognized by freezer
 
+DEBUG = True
+
 running = True
-is_window_open = False
+
+num_sockets_connected = 0
 
 config = Config()
 
@@ -31,40 +34,35 @@ widget_manager = WidgetManager()
 
 platform_specific_functions = platform_specific.get_class()
 
+app = Flask(__name__)
+app.config["TEMPLATES_AUTO_RELOAD"] = DEBUG
+#app.config["DEBUG"] = DEBUG
+app.config['SECRET_KEY'] = '48cyn04 qxfh9u8q9x8h9em9h9xn489nnrmfa'
+socket = SocketIO(app)
+
+@socket.on("connect")
+def connect():
+    global num_sockets_connected
+    num_sockets_connected += 1
+
+@socket.on("disconnect")
+def disconnect():
+    global num_sockets_connected
+    num_sockets_connected -= 1
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_file("icon.ico")
 
 def flush_layout_manager():
     matrix_connector.flush_matrix()
-    window.update_matrix_preview()
+    #window.update_matrix_preview()
+
 layout_manager = LayoutManager(matrix_rep, lambda: flush_layout_manager())
-
-
-icon_image = Image.open(util.get_file_path("icon.png"))
-
-def send_to_tray(*_):
-    window.hide()
-    icon.visible = True
-
-def kill():
-        dpg.stop_dearpygui()
-        dpg.destroy_context()
-        icon.stop()
-
-def reveal_from_tray():
-    icon.visible = False
-    window.show()
-
-def update_is_window_open(is_open):
-    global is_window_open
-    is_window_open = is_open
-
-window = Window(layout_manager, widget_manager, matrix_connector, matrix_rep, platform_specific_functions, config, send_to_tray, kill, update_is_window_open)
-
-icon = pystray.Icon("FWMM", icon_image, "Framework Matrix Manager", menu=pystray.Menu(
-        pystray.MenuItem("Open Window", reveal_from_tray, default=True),
-        pystray.MenuItem("Exit", kill)
-    ))
-
-icon.run_detached(lambda *_: None)
 
 ports = {}
 
@@ -93,32 +91,27 @@ def get_active_ports():
 def set_matrix_pixel(x, y, value):
     matrix_rep.set_led(x, y, value)
     matrix_connector.flush_matrix()
-    window.set_preview_pixel(x, y, value)
-
-
-
-
+    #window.set_preview_pixel(x, y, value)
 
 def load_config():
-    if config.default_layout:
-        window.load_widget_layout(None, {
-            "file_path_name": config.default_layout,
-            "file_name": Path(config.default_layout).name
-        })
-
-
-
+    pass
+    #if config.default_layout:
+    #    window.load_widget_layout(None, {
+    #        "file_path_name": config.default_layout,
+    #        "file_name": Path(config.default_layout).name
+    #    })
 
 def matrix_update_loop():
     spf = layout_manager.get_desired_spf()
     print("Starting rendering loop at SPF=", spf)
     while running:
-        if spf == -1: continue
-        while is_window_open: 
+        if spf == -1:
+            continue
+        while num_sockets_connected > 0: 
             time.sleep(0.1) # Stop this loop until the window is hidden
             start_time = time.time()
             spf = layout_manager.get_desired_spf()
-        print("Sitting around")
+            print("Sitting around")
         
         time.sleep(0.25)
         seconds_elapsed = time.time() - start_time
@@ -134,37 +127,30 @@ def matrix_update_loop():
 
 def main():
     skip_window = "skip-window" in sys.argv
-
     print("skip window? :", skip_window)
 
-    window.initialize_window()
 
-    time.sleep(5)
+    print(os.system("whoami"))
 
     error = get_active_ports()
 
     if not matrix_connector.is_connected():
         print("Couldn't connect to LED matrix:", error)
-        notification.notify(
-            title="Couldn't connect to LED matrix",
-            message=str(error),
-            app_icon=util.get_file_path("icon.ico")
-        )
-        dpg.stop_dearpygui()
-        dpg.destroy_context()
         raise SystemExit
+    
     
     print("config")
     load_config()
 
-    window.start_as_thread()
+    #update_thread = socket.start_background_task(matrix_update_loop)
 
-    if skip_window:
-        while not window.window_handle: time.sleep(0.01) # Wait for thread to initialize the window
-        window.hide()
-        icon.visible = True
-    
-    matrix_update_loop()
+    print("Starting web server")
+
+    if not skip_window and not DEBUG:
+        print("Opening web page")
+        webbrowser.open("http://127.0.0.1:5621")
+
+    socket.run(app, "127.0.0.1", 5621)
 
     print("finished loop")
     
@@ -173,18 +159,10 @@ def main():
     matrix_connector.set_sleep(True)
     
 
-DEBUG = True
 if __name__ == "__main__":
     if DEBUG: main()
     else:
         try:
             main()
         except Exception as e:
-            notification.notify(
-                title="FWMM has encountered an error",
-                message=str(e)
-            )
-            dpg.stop_dearpygui()
-            dpg.destroy_context()
-            icon.stop()
-            window.thread.join(0)
+            pass

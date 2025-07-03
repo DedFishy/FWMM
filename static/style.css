@@ -1,0 +1,71 @@
+@font-face {
+    font-family: DefaultFont;
+    src: url("/static/font.ttf");
+}
+
+*:root {
+    --background-color: black;
+    --background-color-secondary: #333333;
+    --background-color-tertiary:rgb(77, 77, 77);
+    --color: white;
+    background-color: var(--background-color);
+    color: var(--color);
+}
+
+body {
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    font-family: DefaultFont, sans-serif;
+}
+
+#top-bar {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    background-color: var(--background-color-secondary);
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#title {
+    margin: 0;
+}
+
+.dropdown-buttons {
+    height: 100%;
+    align-items: center;
+    font-size: 2em;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.dropdown-buttons-title {
+    height: 100%;
+}
+.dropdown-buttons-list {
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    opacity: 0;
+    transform: scaleY(0);
+    pointer-events: none;
+    transition: 0.2s;
+    background-color: var(--background-color-secondary);
+}
+.dropdown-buttons-list button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    outline: none;
+    font-size: 0.5em;
+    transition: 0.1s;
+}
+.dropdown-buttons-list button:hover {
+    background-color: var(--background-color-tertiary)
+}
+.dropdown-buttons:hover .dropdown-buttons-list {
+    opacity: 1;
+    transform: scaleY(1);
+    pointer-events: all;
+}
