@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 import time
 from PIL import Image
@@ -13,8 +14,7 @@ from layout_manager import LayoutManager
 from widget_layout_object import WidgetObjectLayout
 import sys
 import platform_specific
-from flask import Flask, render_template, send_file, send_from_directory
-from flask_socketio import SocketIO
+from aiohttp import web
 import webbrowser
 import os
 import font_loader # Recognized by freezer
@@ -34,29 +34,18 @@ widget_manager = WidgetManager()
 
 platform_specific_functions = platform_specific.get_class()
 
-app = Flask(__name__)
-app.config["TEMPLATES_AUTO_RELOAD"] = DEBUG
-#app.config["DEBUG"] = DEBUG
-app.config['SECRET_KEY'] = '48cyn04 qxfh9u8q9x8h9em9h9xn489nnrmfa'
-socket = SocketIO(app)
+app = web.Application()
+routes = web.RouteTableDef()
 
-@socket.on("connect")
-def connect():
-    global num_sockets_connected
-    num_sockets_connected += 1
+@routes.get("/")
+async def index_handler(request):
+    with open("index.html", "r+") as index_file:
+        return web.Response(text=index_file.read(), content_type="text/html")
 
-@socket.on("disconnect")
-def disconnect():
-    global num_sockets_connected
-    num_sockets_connected -= 1
+routes.static('/static', "static")
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-@app.route("/favicon.ico")
-def favicon():
-    return send_file("icon.ico")
+    
+app.add_routes(routes)
 
 def flush_layout_manager():
     matrix_connector.flush_matrix()
@@ -101,19 +90,29 @@ def load_config():
     #        "file_name": Path(config.default_layout).name
     #    })
 
-def matrix_update_loop():
+async def background_tasks(app):
+    global running
+    app["matrix_update_loop"] = asyncio.create_task(
+        matrix_update_loop()
+    )
+    yield
+    running = False
+
+    app["matrix_update_loop"].cancel()
+    await app["matrix_update_loop"]
+
+async def matrix_update_loop():
     spf = layout_manager.get_desired_spf()
     print("Starting rendering loop at SPF=", spf)
+    start_time = time.time()
     while running:
-        if spf == -1:
+        await asyncio.sleep(0.1)
+        spf = layout_manager.get_desired_spf()
+
+        if spf == -1: 
+            await asyncio.sleep(1)
             continue
-        while num_sockets_connected > 0: 
-            time.sleep(0.1) # Stop this loop until the window is hidden
-            start_time = time.time()
-            spf = layout_manager.get_desired_spf()
-            print("Sitting around")
         
-        time.sleep(0.25)
         seconds_elapsed = time.time() - start_time
         if (seconds_elapsed >= spf):
             start_time = time.time()
@@ -126,6 +125,7 @@ def matrix_update_loop():
                 print("Failed to write to serial:", e)
 
 def main():
+    global running
     skip_window = "skip-window" in sys.argv
     print("skip window? :", skip_window)
 
@@ -142,7 +142,7 @@ def main():
     print("config")
     load_config()
 
-    #update_thread = socket.start_background_task(matrix_update_loop)
+    app.cleanup_ctx.append(background_tasks)
 
     print("Starting web server")
 
@@ -150,7 +150,11 @@ def main():
         print("Opening web page")
         webbrowser.open("http://127.0.0.1:5621")
 
-    socket.run(app, "127.0.0.1", 5621)
+    app.cleanup_ctx.append(background_tasks)
+
+    web.run_app(app, host="127.0.0.1", port=5621)
+    running = False
+
 
     print("finished loop")
     
