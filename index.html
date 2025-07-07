@@ -4,7 +4,8 @@
         <title>FWMM</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link rel="stylesheet" href="/static/style.css">
+        <link rel="stylesheet" href="/style.css">
+        <link rel="icon" type="image/x-icon" href="/static/icon.ico">
     </head>
     <body>
         <div id="top-bar">
@@ -13,7 +14,7 @@
             <div class="dropdown-buttons">
                 <div class="dropdown-buttons-title">Layout</div>
                 <div class="dropdown-buttons-list">
-                    <button>Load Layout</button>
+                    <button onclick="loadLayout()">Load Layout</button>
                     <button>Save Layout</button>
                     <button>Set Layout As Default</button>
                 </div>
@@ -29,7 +30,27 @@
 
         </div>
 
+        <div id="middle">
+            <canvas id="preview" width="9" height="34">Your browser is too old.</canvas>
+
+            <div id="layout">
+
+            </div>
+
+            <div id="widget-tree">
+
+            </div>
+
+            <div id="available-widget-list">
+
+            </div>
+        </div>
+        
+        <div id="bottom-bar">
+            <div class="bottom-bar-chip">FWMM by DedFishy</div>
+        </div>
+
         <script type="text/javascript" src="/static/socketio.js"></script>
-        <script type="text/javascript" src="/static/fwmm.js"></script>
+        <script type="text/javascript" src="/fwmm.js"></script>
     </body>
 </html>

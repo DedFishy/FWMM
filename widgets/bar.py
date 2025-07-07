@@ -39,7 +39,7 @@ class Widget(WidgetBase):
 
         fill = self.fill_sources[self.configuration["Fill Source"].value](self)
         max_width = fill * width
-        print(max_width)
+        #print(max_width)
         base = np.matrix([[int(max_width > x) * self.configuration["Brightness"].value for x in range(width)] for _ in range(height)])
 
         border_thickness = self.configuration["Border Thickness"].value

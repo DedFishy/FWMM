@@ -1,4 +1,5 @@
 import asyncio
+import json
 from pathlib import Path
 import time
 from PIL import Image
@@ -37,10 +38,50 @@ platform_specific_functions = platform_specific.get_class()
 app = web.Application()
 routes = web.RouteTableDef()
 
+def construct_json_response(dictionary):
+    return web.Response(text=json.dumps(dictionary), content_type="text/json")
+
+def construct_full_update():
+    dictionary = {
+        "widgets": 
+            [{
+                "name": widget.widget.name,
+                "config": {item: widget.widget.configuration[item].serialize() for item in widget.widget.configuration.keys()}
+                } for widget in layout_manager.widgets],
+        "available": list(widget_manager.widgets.keys())
+    }
+    return construct_json_response(dictionary)
+
 @routes.get("/")
 async def index_handler(request):
     with open("index.html", "r+") as index_file:
         return web.Response(text=index_file.read(), content_type="text/html")
+    
+@routes.get("/fwmm.js")
+async def js_handler(request):
+    with open("static/fwmm.js", "r+") as fwmm_js:
+        return web.Response(text=fwmm_js.read(), content_type="text/javascript")
+
+@routes.get("/style.css")
+async def css_handler(request):
+    with open("static/style.css", "r+") as css:
+        return web.Response(text=css.read(), content_type="text/css")
+    
+# API Definitiions
+@routes.get("/initial")
+async def available_widgets(request):
+    return construct_full_update()
+
+@routes.get("/createwidget/{widget}")
+async def widget_meta(request):
+    widget_name = request.match_info.get("widget", None)
+    widget = widget_manager.widgets[widget_name]() # type: ignore
+
+    layout_manager.add_widget(widget)
+
+    print({item: widget.configuration[item].serialize() for item in widget.configuration.keys()})
+
+    return construct_full_update()
 
 routes.static('/static', "static")
 

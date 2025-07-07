@@ -17,7 +17,7 @@ class LayoutManager:
         self.flush_callback = flush_callback
 
     def add_widget(self, widget: Widget, color=None):
-        widget_object_layout = WidgetObjectLayout(widget, self, len(self.widgets), color)
+        widget_object_layout = WidgetObjectLayout(widget, self, color)
         self.widgets.append(widget_object_layout)
         widget_object_layout.create_dpg()
         return widget_object_layout
@@ -54,7 +54,7 @@ class LayoutManager:
         spf = -1
         for widget in self.widgets:
             desired = widget.widget.get_desired_spf()
-            print(desired)
+            #print(desired)
             if desired == -1: desired = 30
             if desired < spf or spf == -1:
                 spf = desired

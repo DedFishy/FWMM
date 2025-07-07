@@ -24,3 +24,12 @@ class WidgetConfigItem:
         self.maximum = maximum
         self.config_item_type = type
         self.options = options
+    
+    def serialize(self):
+        return {
+            "value": self.value,
+            "item_type": self.config_item_type.value,
+            "minimum": self.minimum,
+            "maximum": self.maximum,
+            "options": self.options
+        }

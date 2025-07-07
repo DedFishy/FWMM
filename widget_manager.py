@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import util
 from widget import Widget
+from widget_config_item import WidgetConfigItem
 
 
 class WidgetManager:

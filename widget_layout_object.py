@@ -10,19 +10,14 @@ class WidgetObjectLayout:
 
     widget: Widget
     layout_manager = None
-    widget_id: int
     color = None
     showing_config = False
 
-    def __init__(self, widget: Widget, layout_manager, wid: int, color = None):
+    def __init__(self, widget: Widget, layout_manager, color = None):
         if not color: self.color = (randint(0, 255), randint(0, 255), randint(0, 255), 255)
         else: self.color = color
         self.widget = widget
         self.layout_manager = layout_manager
-        self.widget_id = wid
-
-    def get_tag(self):
-        return "widget-" + str(self.widget_id)
     
     def get_current_size(self):
         size = self.widget.get_current_size()
