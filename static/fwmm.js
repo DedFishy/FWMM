@@ -7,6 +7,12 @@ const widgetLayout = document.getElementById("layout");
 const widgetTree = document.getElementById("widget-tree");
 const notificationList = document.getElementById("notification-list");
 
+document.body.onresize = (e) => {
+    widgets.forEach((value, index, array) => {
+        updateLayoutObject(value.widgetLayoutObject, value.dimensions.width, value.dimensions.height, value.dimensions.x, value.dimensions.y, value.dimensions.rotation);
+    });
+}
+
 var widgets = [];
 
 // Helpers
@@ -228,7 +234,14 @@ function constructOneWidget(widgetMetadata) {
     return {
         name: widgetMetadata["name"],
         widgetLayoutObject: widgetLayoutObject,
-        widgetElement: widgetElement
+        widgetElement: widgetElement,
+        dimensions: {
+            width: widgetMetadata["size"][0],
+            height: widgetMetadata["size"][1],
+            x: widgetMetadata["transform"]["X"],
+            y: widgetMetadata["transform"]["Y"], 
+            rotation: widgetMetadata["transform"]["Rotation"]
+        }
     }
 }
 
