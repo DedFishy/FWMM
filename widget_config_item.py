@@ -12,7 +12,7 @@ class ConfigItemType(Enum):
 class WidgetConfigItem:
     value = None
 
-    config_item_type: ConfigItemType = -1
+    config_item_type: ConfigItemType = ConfigItemType.integer
 
     minimum: int = 0
     maximum: int = 0
@@ -33,3 +33,13 @@ class WidgetConfigItem:
             "maximum": self.maximum,
             "options": self.options
         }
+    
+    # For updating values based on what the frontend returns (which is encoded as a string by default)
+    def update_value(self, new_value):
+        if self.config_item_type == ConfigItemType.text: self.value = str(new_value)
+        elif self.config_item_type == ConfigItemType.integer: self.value = int(new_value)
+        elif self.config_item_type == ConfigItemType.float: self.value = float(new_value)
+        elif self.config_item_type == ConfigItemType.integer_list: self.value = [int(x) for x in list(new_value)]
+        elif self.config_item_type == ConfigItemType.float_list: self.value = [float(x) for x in list(new_value)]
+        elif self.config_item_type == ConfigItemType.boolean: self.value = bool(new_value)
+        elif self.config_item_type == ConfigItemType.combo: self.value = str(new_value)

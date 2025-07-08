@@ -61,8 +61,8 @@ function handleFullUpdate(update) {
 }
 
 // Widget Tree
-function sendConfigUpdate(name, ) {
-
+async function sendConfigUpdate(widgetIndex, name, newValue) {
+    await getJSONFromPath("/updatewidgetconfig/" + widgetIndex + "/" + name + "/" + newValue)
 }
 async function createWidget(widget) {
     return await getJSONFromPath("/createwidget/" + widget)
@@ -92,7 +92,7 @@ function constructOneWidget(widgetMetadata) {
     const widgetConfig = document.createElement("div");
     widgetConfig.className = "widget-tree-config";
     Object.keys(widgetMetadata["config"]).forEach((value, index, array) => {
-        widgetConfig.appendChild(constructConfigItem(value, widgetMetadata["config"][value]));
+        widgetConfig.appendChild(constructConfigItem(widgetMetadata["index"], value, widgetMetadata["config"][value]));
     })
     widgetElement.appendChild(widgetConfig);
 
@@ -101,7 +101,7 @@ function constructOneWidget(widgetMetadata) {
     
 }
 
-function constructConfigItem(name, meta) {
+function constructConfigItem(widgetIndex, name, meta) {
     console.log(name, meta);
     const container = document.createElement("div");
     container.className = "widget-tree-config-item";
@@ -137,7 +137,7 @@ function constructConfigItem(name, meta) {
     }
     input.className = "widget-tree-config-item-input";
     input.onchange = (event) => {
-
+        sendConfigUpdate(widgetIndex, name, event.target.value);
     }
     container.appendChild(input);
     return container;

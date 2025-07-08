@@ -46,7 +46,8 @@ def construct_full_update():
         "widgets": 
             [{
                 "name": widget.widget.name,
-                "config": {item: widget.widget.configuration[item].serialize() for item in widget.widget.configuration.keys()}
+                "config": {item: widget.widget.configuration[item].serialize() for item in widget.widget.configuration.keys()},
+                "index": layout_manager.widgets.index(widget)
                 } for widget in layout_manager.widgets],
         "available": list(widget_manager.widgets.keys())
     }
@@ -80,6 +81,15 @@ async def widget_meta(request):
     layout_manager.add_widget(widget)
 
     print({item: widget.configuration[item].serialize() for item in widget.configuration.keys()})
+
+    return construct_full_update()
+
+@routes.get("/updatewidgetconfig/{widget_index}/{name}/{new_value}")
+async def update_widget_config(request):
+    widget_index = request.match_info.get("widget_index", None)
+    name = request.match_info.get("name", None)
+    new_value = request.match_info.get("new_value", None)
+    layout_manager.widgets[int(widget_index)].widget.configuration[name].update_value(new_value)
 
     return construct_full_update()
 
