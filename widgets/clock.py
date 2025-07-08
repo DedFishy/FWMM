@@ -34,8 +34,8 @@ class Widget(WidgetBase):
         spacer = [
             [0 for _ in range(0, spacing)] for _ in range(0, matrix.shape[0])
         ]
-        matrix = np.concatenate((matrix, np.matrix(spacer)), axis=1)
-        matrix = np.concatenate((matrix, character), axis=1)
+        matrix = np.concatenate((matrix, np.matrix(spacer)), axis=1) # type: ignore
+        matrix = np.concatenate((matrix, character), axis=1) # type: ignore
         return matrix
     
     def render(self, digit_one, digit_two, digit_three, digit_four):

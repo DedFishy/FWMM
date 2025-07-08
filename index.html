@@ -30,6 +30,16 @@
                 <div class="dropdown-buttons-list">
                     <button onclick="stopServer()">Stop</button>
                     <button onclick="addToStartup()">Add to Startup</button>
+                    <button onclick="updateNow()">Render Now</button>
+                </div>
+            </div>
+
+            <div class="dropdown-buttons">
+                <div class="dropdown-buttons-title">Links</div>
+                <div class="dropdown-buttons-list">
+                    <a href="https://github.com/DedFishy/FWMM">GitHub</a>
+                    <a href="https://boyne.dev">boyne.dev</a>
+                    <a href="https://hackclub.com">Hack Club</a>
                 </div>
             </div>
 
@@ -51,10 +61,11 @@
 
             </div>
         </div>
-        
-        <div id="bottom-bar">
-            <div class="bottom-bar-chip">FWMM by DedFishy</div>
-            <button onclick="updateNow()">Render Now</button>
+
+        <div id="bottom">
+            <div>Preview</div>
+            <div>Widgets</div>
+            <div>Available</div>
         </div>
 
         <script type="text/javascript" src="/static/socketio.js"></script>

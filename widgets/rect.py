@@ -23,4 +23,4 @@ class Widget(WidgetBase):
         return -1
 
     def get_frame(self):
-        return [[self.configuration["Brightness"].value] * self.get_current_size()[0] for _ in range(0, self.get_current_size()[1])]
+        return [[self.configuration["Brightness"].value] * self.get_current_size()[0] for _ in range(0, self.get_current_size()[1])] # type: ignore

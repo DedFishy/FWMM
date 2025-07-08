@@ -42,17 +42,17 @@ class Widget(WidgetBase):
         width = self.configuration["Width"].value
         height = self.configuration["Height"].value
 
-        fill = self.fill_sources[self.configuration["Fill Source"].value](self)
+        fill = self.fill_sources[self.configuration["Fill Source"].value](self) # type: ignore
         print(fill)
         max_width = fill * width
         #print(max_width)
-        base = np.matrix([[int(max_width > x) * self.configuration["Brightness"].value for x in range(width)] for _ in range(height)])
+        base = np.matrix([[int(max_width > x) * self.configuration["Brightness"].value for x in range(width)] for _ in range(height)]) # type: ignore
 
         border_thickness = self.configuration["Border Thickness"].value
         border_brightness = self.configuration["Border Brightness"].value
         base[:, 0:border_thickness] = border_brightness
-        base[:, width-border_thickness:width] = border_brightness
+        base[:, width-border_thickness:width] = border_brightness # type: ignore
         base[0:border_thickness, :] = border_brightness
-        base[height-border_thickness:height, :] = border_brightness
+        base[height-border_thickness:height, :] = border_brightness # type: ignore
         
         return base

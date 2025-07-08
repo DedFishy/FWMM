@@ -142,14 +142,14 @@ function constructOneWidget(widgetMetadata) {
     const widgetElement = document.createElement("div");
     widgetElement.className = "widget-tree-widget-container";
 
-    const widgetDropdownIndicator = document.createElement("div");
-    widgetDropdownIndicator.className = "widget-tree-dropdown-indicator";
-    widgetElement.appendChild(widgetDropdownIndicator);
+    const widgetHeader = document.createElement("div");
+    widgetHeader.className = "widget-tree-header";
+    widgetElement.appendChild(widgetHeader);
 
     const widgetNameIndicator = document.createElement("div");
     widgetNameIndicator.className = "widget-tree-name-indicator";
     widgetNameIndicator.innerText = widgetMetadata["name"];
-    widgetElement.appendChild(widgetNameIndicator); 
+    widgetHeader.appendChild(widgetNameIndicator); 
 
     const widgetDel = document.createElement("button");
     widgetDel.className = "delete";
@@ -158,17 +158,23 @@ function constructOneWidget(widgetMetadata) {
 
         sendDeleteUpdate(widgetMetadata["index"]);
     }
-    widgetElement.appendChild(widgetDel);
+    widgetHeader.appendChild(widgetDel);
 
     const color = widgetMetadata["color"];
     const colorHex = rgbToHex(color[0], color[1], color[2])
     const widgetColor = document.createElement("input");
     widgetColor.type = "color";
     widgetColor.value = colorHex;
-    widgetElement.appendChild(widgetColor);
+    widgetHeader.appendChild(widgetColor);
 
     const widgetTransform = document.createElement("div");
     widgetTransform.className = "widget-tree-transform";
+
+    const widgetTransformHeader = document.createElement("div");
+    widgetTransformHeader.className = "widget-header";
+    widgetTransformHeader.innerText = "Transform";
+    widgetElement.appendChild(widgetTransformHeader);
+
     widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "X", {
         "item_type": 1,
         "value": widgetMetadata["transform"]["X"],
@@ -193,6 +199,12 @@ function constructOneWidget(widgetMetadata) {
 
     const widgetConfig = document.createElement("div");
     widgetConfig.className = "widget-tree-config";
+
+    const widgetConfigHeader = document.createElement("div");
+    widgetConfigHeader.className = "widget-header";
+    widgetConfigHeader.innerText = "Configuration";
+    widgetElement.appendChild(widgetConfigHeader);
+
     Object.keys(widgetMetadata["config"]).forEach((value, index, array) => {
         widgetConfig.appendChild(constructConfigItem(widgetMetadata["index"], value, widgetMetadata["config"][value], false));
     })

@@ -22,15 +22,17 @@ import os
 import filedialpy
 import font_loader # Recognized by freezer
 import signal
+from plyer import notification
 
 def shutdown():
     signal.raise_signal(signal.SIGTERM)
 
-DEBUG = True
+DEBUG = False
 
 running = True
 
 num_sockets_connected = 0
+
 
 config = Config()
 
@@ -115,6 +117,7 @@ async def update_widget_config(request):
     layout_manager.widgets[int(widget_index)].widget.configuration[name].update_value(new_value)
 
     layout_manager.render()
+    matrix_connector.flush_matrix()
 
     return construct_full_update()
 
@@ -145,6 +148,8 @@ async def update_widget_transform(request):
 async def delete_widget(request):
     widget_index = request.match_info.get("widget_index", None)
     layout_manager.remove(layout_manager.widgets[int(widget_index)])
+    layout_manager.render()
+    matrix_connector.flush_matrix()
     return construct_full_update()
 
 @routes.get("/updatenow")
@@ -315,6 +320,10 @@ def main():
 
     if not matrix_connector.is_connected():
         print("Couldn't connect to LED matrix:", error)
+        error = str(error)
+        if "[Errno 13]" in error:
+            error = "Permission to access your matrix was denied. Please run 'sudo chmod 666 " + error.split(" ")[-1].replace("'", "") + "' to allow FWMM to connect to your input module."
+        notification.notify(title="Couldn't connect to LED matrix", message=str(error), app_name="FWMM") # type: ignore
         raise SystemExit
     
     
@@ -350,4 +359,4 @@ if __name__ == "__main__":
         try:
             main()
         except Exception as e:
-            pass
+            notification.notify(title="FWMM has crashed", message=str(e), app_name="FWMM") # type: ignore

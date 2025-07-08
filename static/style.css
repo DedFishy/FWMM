@@ -95,8 +95,11 @@ input[type=number]::-webkit-outer-spin-button {
     transition: 0.2s;
     background-color: var(--background-color-secondary);
     z-index: 5;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 1.2em;
 }
-.dropdown-buttons-list button {
+.dropdown-buttons-list button, .dropdown-buttons-list a {
     background-color: transparent;
     color: white;
     border: none;
@@ -104,8 +107,11 @@ input[type=number]::-webkit-outer-spin-button {
     font-size: 0.5em;
     transition: 0.1s;
     cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    border-radius: 2px;
 }
-.dropdown-buttons-list button:hover {
+.dropdown-buttons-list button:hover, .dropdown-buttons-list a:hover {
     background-color: var(--background-color-tertiary)
 }
 .dropdown-buttons:hover .dropdown-buttons-list {
@@ -120,16 +126,23 @@ input[type=number]::-webkit-outer-spin-button {
     display: flex;
     flex-direction: row;
     min-height: 0;
+    background-color: var(--background-color-secondary);
+    gap: 5px;
 }
-#middle > div, #middle > canvas {
-    border: 5px solid var(--background-color-secondary);
+#middle > div {
     box-sizing: border-box;
+    background-color: black;
+    border-radius: 7px;
 }
 #layout {
     aspect-ratio: calc(9/34);
     height: 100%;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
+    background-image: url("/static/layout-background.png");
+    background-size: cover;
+    image-rendering: crisp-edges;
 }
 #widget-tree {
     flex-grow: 1;
@@ -140,9 +153,10 @@ input[type=number]::-webkit-outer-spin-button {
 #available-widget-list {
     overflow-y: scroll;
     padding: 10px;
+    flex-shrink: 0;
 }
 .available-widget {
-
+    font-size: 1.5em;
 }
 
 .centered {
@@ -159,16 +173,31 @@ input[type=number]::-webkit-outer-spin-button {
     border: 5px solid var(--background-color-tertiary);
     border-radius: 5px;
     margin: 5px;
-    padding: 3px;
 }
 .widget-tree-name-indicator {
     font-size: 2em;
+    flex-grow: 1;
 }
 .widget-tree-config-item {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 5px;
+    background-color: var(--background-color-tertiary);
+    padding: 5px;
+    border-radius: 5px;
+}
+.widget-tree-transform, .widget-tree-config {
+    margin: 5px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+.widget-header {
+    font-size: 1.5em;
+    margin: 5px;
 }
 .widget-tree-config-item-input {
     background-color: var(--background-color-secondary);
@@ -196,21 +225,31 @@ input[type=number]::-webkit-outer-spin-button {
 .widget-layout-object {
     background-color: red;
     position: absolute;
+    border: 5px solid var(--background-color-tertiary);
+    box-sizing: border-box;
 }
 
-
+.widget-tree-header {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    background-color: var(--background-color-tertiary);
+}
+.widget-tree-header button, .widget-tree-header input {
+    background-color: var(--background-color-secondary);
+    border-radius: 5px;
+    color: white;
+    border: none;
+}
 
 /* BOTTOM */
-#bottom-bar {
+#bottom {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-#bottom-bar button {
+    justify-content: space-between;
     background-color: var(--background-color-secondary);
-    color: white;
-    border: none;
-    cursor: pointer;
+    font-size: 1.5em;
+    padding: 5px;
 }

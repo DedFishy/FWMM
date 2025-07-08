@@ -43,7 +43,6 @@ class LayoutManager:
     def remove(self, widget):
         self.widgets.remove(widget)
         self.render()
-        self.flush_callback()
 
     def collapse_all(self):
         for widget in self.widgets:
