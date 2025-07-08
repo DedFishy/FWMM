@@ -9,7 +9,7 @@ const notificationList = document.getElementById("notification-list");
 
 document.body.onresize = (e) => {
     widgets.forEach((value, index, array) => {
-        updateLayoutObject(value.widgetLayoutObject, value.dimensions.width, value.dimensions.height, value.dimensions.x, value.dimensions.y, value.dimensions.rotation);
+        updateLayoutObject(index, value.widgetLayoutObject, value.dimensions.width, value.dimensions.height, value.dimensions.x, value.dimensions.y, value.dimensions.rotation);
     });
 }
 
@@ -64,7 +64,7 @@ function handleFullUpdate(update, forceReloadWidgets = false) {
         });
     } else {
         update["widgets"].forEach((value, index, array) => {
-            updateLayoutObject(widgets[index].widgetLayoutObject, value["size"][0], value["size"][1], value["transform"]["X"], value["transform"]["Y"], value["transform"]["Rotation"]);
+            updateLayoutObject(index, widgets[index].widgetLayoutObject, value["size"][0], value["size"][1], value["transform"]["X"], value["transform"]["Y"], value["transform"]["Rotation"]);
         });
     }
     if (availableWidgetList.children.length != update["available"].length)
@@ -76,8 +76,18 @@ function handleFullUpdate(update, forceReloadWidgets = false) {
 
 }
 
-function updateLayoutObject(layoutObject, width, height, x, y, rotation) {
+function updateLayoutObject(index, layoutObject, width, height, x, y, rotation) {
+    if (index != -1) {
+        widgets[index].dimensions = {
+                width: width,
+                height: height,
+                x: x,
+                y: y, 
+                rotation: rotation
+            }
+    }
     const scale = widgetLayout.offsetWidth/WIDTH;
+    
     width *= scale;
     height *= scale;
     x *= scale;
@@ -91,6 +101,8 @@ function updateLayoutObject(layoutObject, width, height, x, y, rotation) {
     layoutObject.style.left = x + "px";
     layoutObject.style.width = width + "px";
     layoutObject.style.height = height + "px";
+
+    
 }
 
 function showNotification(text) {
@@ -220,7 +232,7 @@ function constructOneWidget(widgetMetadata) {
 
     const widgetLayoutObject = document.createElement("div");
     widgetLayoutObject.className = "widget-layout-object";
-    updateLayoutObject(widgetLayoutObject, widgetMetadata["size"][0], widgetMetadata["size"][1], widgetMetadata["transform"]["X"], widgetMetadata["transform"]["Y"], widgetMetadata["transform"]["Rotation"]);
+    updateLayoutObject(-1, widgetLayoutObject, widgetMetadata["size"][0], widgetMetadata["size"][1], widgetMetadata["transform"]["X"], widgetMetadata["transform"]["Y"], widgetMetadata["transform"]["Rotation"]);
     widgetLayoutObject.style.backgroundColor = colorHex;
 
     widgetColor.onchange = (event) => {
