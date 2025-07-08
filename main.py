@@ -106,6 +106,9 @@ async def widget_meta(request):
 
     print({item: widget.configuration[item].serialize() for item in widget.configuration.keys()})
 
+    layout_manager.render()
+    matrix_connector.flush_matrix()
+
     return construct_full_update()
 
 @routes.get("/updatewidgetconfig/{widget_index}/{name}/{new_value}")
@@ -141,6 +144,9 @@ async def update_widget_transform(request):
     elif name == "Y": target.position[1] = int(new_value)
     elif name == "Rotation": target.rotation = int(new_value)
     else: print("Invalid transform variable", name)
+
+    layout_manager.render()
+    matrix_connector.flush_matrix()
 
     return construct_full_update()
 
