@@ -321,6 +321,10 @@ function saveLayout() {
 function setDefaultLayout() {
     fetch("/setdefaultlayout");
 }
+async function addToStartup() {
+    result = (await getJSONFromPath("/addtostartup"))["result"];
+    showNotification(result);
+}
 function stopServer() {
     document.body.innerHTML = "<div class='centered'><h1>FWMM is shutting down.</h1><h4>You may close this tab.</h4></div>"
     fetch("/stop");

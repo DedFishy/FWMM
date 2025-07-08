@@ -13,7 +13,7 @@ class Windows(PlatformSpecificFunctions):
     startup_location = ""
     is_frozen = False
     def __init__(self):
-        import winshell
+        import winshell # type: ignore
         self.startup_location = winshell.startup()
         self.is_frozen = getattr(sys, 'frozen', False)
     
@@ -29,6 +29,42 @@ class Windows(PlatformSpecificFunctions):
             script += "\ncd " + str(Path(os.path.abspath(__file__)).parent.resolve())
             script += "\nstart " + self.get_self_start_command() + " skip-window"
             startup_script.write(script)
+        return True
+
+class Linux(PlatformSpecificFunctions):
+    startup_location = ""
+    is_frozen = False
+    def __init__(self):
+        self.startup_location = "/etc/systemd/system"
+        self.is_frozen = getattr(sys, 'frozen', False)
+    
+    def get_self_start_command(self):
+        if self.is_frozen:
+            return str(Path(sys.executable).resolve())
+        else:
+            return str(Path(sys.executable).parent.resolve()) + "/python main.py"
+
+    def add_self_to_startup(self):
+        with open(os.path.join(self.startup_location, "fwmm.service"), "w+") as startup_script:
+            script = "[Unit]"
+            script += "\nDescription=Framework Matrix Manager service"
+            script += "\n[Service]"
+            script += "\nType=simple"
+            script += "\nRemainAfterExit=yes"
+            script += "\nWorkingDirectory=" + str(Path(os.path.abspath(__file__)).parent.resolve())
+            script += "\nExecStart=" + self.get_self_start_command() + " skip-window"
+            script += "\nRestart=always"
+            script += "\nTimeoutStartSec=0"
+            script += "\nEnvironment=PYTHONUNBUFFERED=1"
+            script += "\n[Install]"
+            script += "\nWantedBy=multi-user.target"
+            startup_script.write(script)
+
+        success = (os.system("systemctl daemon-reload") + os.system("systemctl enable fwmm.service") == 0)
+        return success
+
 
 def get_class() -> PlatformSpecificFunctions:
     if os.name == "nt": return Windows()
+    elif os.name == "posix": return Linux()
+    else: raise OSError("Invalid OS: " + os.name)

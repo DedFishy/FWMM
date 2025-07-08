@@ -209,6 +209,21 @@ async def stop_server(request):
     shutdown()
     return construct_json_response({})
 
+@routes.get("/addtostartup")
+async def add_to_startup(request):
+    result = "Successfully added to system startup"
+    success = True
+    try:
+        success = platform_specific_functions.add_self_to_startup()
+    except PermissionError:
+        result = "Couldn't write to startup folder (systemd on Linux), run FWMM as root"
+    except Exception as e:
+        result = "Couldn't add to startup: " + str(e)
+    
+    if not success:
+        result = "An unknown error occurred, check terminal output"
+    return construct_json_response({"result": result})
+
 routes.static('/static', "static")
 
     

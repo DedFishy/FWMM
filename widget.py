@@ -7,7 +7,7 @@ class Widget:
     name: str = "Unnamed"
     position = [0,0]
     rotation = 0 # Must be 0 or multiple of 90
-    import_name = None
+    import_name = "Unnamed"
     allow_rotation = True
 
     configuration: dict[str, WidgetConfigItem] = {}
@@ -22,4 +22,4 @@ class Widget:
         return -1
 
     def get_frame(self):
-        return [[255] * self.current_size[0] for _ in range(0, self.current_size[1])]
+        return [[255] * self.current_size[0] for _ in range(0, self.current_size[1])] # type: ignore
