@@ -9,6 +9,7 @@ class Widget(WidgetBase):
     allow_rotation = False
 
     def __init__(self):
+        super().__init__()
         self.configuration = {
             "Rectangle Width": Config(ConfigType.integer, 5, 1, WIDTH),
             "Rectangle Height": Config(ConfigType.integer, 5, 1, HEIGHT),

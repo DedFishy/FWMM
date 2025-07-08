@@ -13,10 +13,11 @@ class Widget(WidgetBase):
 
     fill_sources = {
         "None": lambda w: 0,
-        "Battery": lambda w: plyer.battery.status["percentage"]/100,
+        "Battery": lambda w: plyer.battery.status["percentage"]/100, # type: ignore
     }
 
     def __init__(self):
+        super().__init__()
         self.configuration = {
             "Width": Config(ConfigType.integer, 5, 1, max(WIDTH, HEIGHT)),
             "Height": Config(ConfigType.integer, 5, 1, max(WIDTH, HEIGHT)),
@@ -38,6 +39,7 @@ class Widget(WidgetBase):
         height = self.configuration["Height"].value
 
         fill = self.fill_sources[self.configuration["Fill Source"].value](self)
+        print(fill)
         max_width = fill * width
         #print(max_width)
         base = np.matrix([[int(max_width > x) * self.configuration["Brightness"].value for x in range(width)] for _ in range(height)])

@@ -17,6 +17,7 @@ class Widget(WidgetBase):
     loaded_font_name = None
 
     def __init__(self):
+        super().__init__()
         self.configuration = {
             "Brightness": Config(ConfigType.integer, 255, 0, 255),
             "Twelve Hour": Config(ConfigType.boolean, False),

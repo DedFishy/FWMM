@@ -21,6 +21,15 @@ body {
     display: flex;
     flex-direction: column;
 }
+input[type="number"] {
+  -webkit-appearance: textfield;
+     -moz-appearance: textfield;
+          appearance: textfield;
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+}
 
 /* TOP */
 #top-bar {
@@ -45,14 +54,9 @@ body {
     border: 5px solid var(--background-color-secondary);
     box-sizing: border-box;
 }
-#preview {
-    image-rendering: crisp-edges;
-    height: 100%;
-}
 #layout {
     aspect-ratio: calc(9/34);
     height: 100%;
-    
 }
 #widget-tree {
     flex-grow: 1;
@@ -65,6 +69,44 @@ body {
 }
 .available-widget {
 
+}
+
+.widget-tree-widget-container {
+    border: 5px solid var(--background-color-tertiary);
+    border-radius: 5px;
+    margin: 5px;
+    padding: 3px;
+}
+.widget-tree-name-indicator {
+    font-size: 2em;
+}
+.widget-tree-config-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+.widget-tree-config-item-input {
+    background-color: var(--background-color-secondary);
+    color: white;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+}
+.number-inc-dec-container {
+    display: flex;
+    flex-direction: column;
+}
+.number-inc-dec-container button {
+    flex-shrink: 1;
+    border: none;
+    background-color: var(--background-color-secondary);
+    border: 2px solid var(--background-color-tertiary);
+    margin: 1px;
+    color: white;
+    border-radius: 2px;
+    filter: grayscale();
+    font-size: 0.5em;
 }
 
 .dropdown-buttons {
@@ -86,6 +128,7 @@ body {
     pointer-events: none;
     transition: 0.2s;
     background-color: var(--background-color-secondary);
+    z-index: 5;
 }
 .dropdown-buttons-list button {
     background-color: transparent;

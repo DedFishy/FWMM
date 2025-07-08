@@ -4,13 +4,16 @@ from widget_config_item import WidgetConfigItem
 
 
 class Widget:
-    name: str = None
+    name: str = "Unnamed"
     position = [0,0]
     rotation = 0 # Must be 0 or multiple of 90
     import_name = None
     allow_rotation = True
 
     configuration: dict[str, WidgetConfigItem] = {}
+
+    def __init__(self):
+        self.position = [0,0]
 
     def get_current_size(self):
         return [0,0]

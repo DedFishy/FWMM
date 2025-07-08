@@ -1,8 +1,6 @@
 const WIDTH = 9;
 const HEIGHT = 34;
 
-const preview = document.getElementById("preview");
-const previewContext = preview.getContext("2d");
 
 const availableWidgetList = document.getElementById("available-widget-list");
 const widgetTree = document.getElementById("widget-tree");
@@ -64,6 +62,9 @@ function handleFullUpdate(update) {
 async function sendConfigUpdate(widgetIndex, name, newValue) {
     await getJSONFromPath("/updatewidgetconfig/" + widgetIndex + "/" + name + "/" + newValue)
 }
+async function sendTransformUpdate(widgetIndex, name, newValue) {
+    await getJSONFromPath("/updatewidgettransform/" + widgetIndex + "/" + name + "/" + newValue)
+}
 async function createWidget(widget) {
     return await getJSONFromPath("/createwidget/" + widget)
 }
@@ -79,6 +80,7 @@ function constructOneWidget(widgetMetadata) {
     console.log("Rendering widget with metadata:")
     console.log(widgetMetadata)
     const widgetElement = document.createElement("div");
+    widgetElement.className = "widget-tree-widget-container";
 
     const widgetDropdownIndicator = document.createElement("div");
     widgetDropdownIndicator.className = "widget-tree-dropdown-indicator";
@@ -89,10 +91,34 @@ function constructOneWidget(widgetMetadata) {
     widgetNameIndicator.innerText = widgetMetadata["name"];
     widgetElement.appendChild(widgetNameIndicator); 
 
+    const widgetTransform = document.createElement("div");
+    widgetTransform.className = "widget-tree-transform";
+    widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "X", {
+        "item_type": 1,
+        "value": 0,
+        "minimum": 0,
+        "maximum": 10
+    },
+    true))
+    widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "Y", {
+        "item_type": 1,
+        "value": 0,
+        "minimum": 0,
+        "maximum": 35
+    },
+    true))
+    widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "Rotation", {
+        "item_type": 6,
+        "value": 0,
+        "options": [0, 90, 180, 270]
+    },
+    true))
+    widgetElement.appendChild(widgetTransform);
+
     const widgetConfig = document.createElement("div");
     widgetConfig.className = "widget-tree-config";
     Object.keys(widgetMetadata["config"]).forEach((value, index, array) => {
-        widgetConfig.appendChild(constructConfigItem(widgetMetadata["index"], value, widgetMetadata["config"][value]));
+        widgetConfig.appendChild(constructConfigItem(widgetMetadata["index"], value, widgetMetadata["config"][value], false));
     })
     widgetElement.appendChild(widgetConfig);
 
@@ -101,7 +127,7 @@ function constructOneWidget(widgetMetadata) {
     
 }
 
-function constructConfigItem(widgetIndex, name, meta) {
+function constructConfigItem(widgetIndex, name, meta, isTransform) {
     console.log(name, meta);
     const container = document.createElement("div");
     container.className = "widget-tree-config-item";
@@ -112,6 +138,7 @@ function constructConfigItem(widgetIndex, name, meta) {
     container.appendChild(label);
 
     var input;
+    var innerInput = undefined;
     switch (meta["item_type"]) {
         case 1: // Number (TODO: Make this show a range slider as well)
             input = document.createElement("input");
@@ -119,6 +146,41 @@ function constructConfigItem(widgetIndex, name, meta) {
             input.value = meta["value"];
             input.min = meta["minimum"];
             input.max = meta["maximum"];
+
+            innerInput = document.createElement("input");
+            innerInput.className = "number-input-slider";
+            innerInput.type = "range";
+            innerInput.min = meta["minimum"];
+            innerInput.max = meta["maximum"];
+            innerInput.value = meta["value"];
+            console.log(name, meta["value"]);
+            innerInput.onchange = (event) => {
+                input.value = innerInput.value;
+                input.onchange(undefined);
+            };
+
+            const incDecContainer = document.createElement("div");
+            incDecContainer.className = "number-inc-dec-container";
+
+            incButton = document.createElement("button");
+            incButton.className = "number-inc-button";
+            incButton.onclick = (event) => {input.value = Number(input.value) + 1; input.onchange(undefined);}
+            incButton.innerText = "⮝"
+            incDecContainer.appendChild(incButton);
+
+            decButton = document.createElement("button");
+            decButton.className = "number-dec-button";
+            decButton.onclick = (event) => {input.value = Number(input.value) - 1; input.onchange(undefined);}
+            decButton.innerText = "⮟"
+            incDecContainer.appendChild(decButton);
+
+            container.appendChild(innerInput);
+            container.appendChild(incDecContainer);
+            break;
+        case 5:
+            input = document.createElement("input");
+            input.type = "checkbox";
+            input.value = meta["value"];
             break;
         case 6: // Dropdown
             input = document.createElement("select");
@@ -137,7 +199,20 @@ function constructConfigItem(widgetIndex, name, meta) {
     }
     input.className = "widget-tree-config-item-input";
     input.onchange = (event) => {
-        sendConfigUpdate(widgetIndex, name, event.target.value);
+        if (meta["item_type"] == 1) {
+            console.log(meta, Number(input.value))
+            if (Number(input.value) > meta["maximum"]) {
+                input.value = meta["maximum"];
+                return;
+            }
+            else if (Number(input.value) < meta["minimum"]) {
+                input.value = meta["minimum"];
+                return;
+            }
+        }
+        if (innerInput) {innerInput.value = input.value}
+        if (!isTransform) sendConfigUpdate(widgetIndex, name, input.value);
+        else sendTransformUpdate(widgetIndex, name, input.value);
     }
     container.appendChild(input);
     return container;
@@ -152,12 +227,6 @@ function loadLayout() {
         console.log(e.target.files[0]);
     };
     filePicker.click();
-}
-
-// Preview
-function drawPixel(x, y, color) {
-    previewContext.fillStyle = color;
-    previewContext.fillRect(x,y,1,1);
 }
 
 // Setup

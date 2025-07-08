@@ -87,9 +87,24 @@ async def widget_meta(request):
 @routes.get("/updatewidgetconfig/{widget_index}/{name}/{new_value}")
 async def update_widget_config(request):
     widget_index = request.match_info.get("widget_index", None)
+    print(widget_index)
     name = request.match_info.get("name", None)
     new_value = request.match_info.get("new_value", None)
     layout_manager.widgets[int(widget_index)].widget.configuration[name].update_value(new_value)
+
+    return construct_full_update()
+
+@routes.get("/updatewidgettransform/{widget_index}/{name}/{new_value}")
+async def update_widget_transform(request):
+    widget_index = request.match_info.get("widget_index", None)
+    print(widget_index)
+    name = request.match_info.get("name", None)
+    new_value = request.match_info.get("new_value", None)
+    target = layout_manager.widgets[int(widget_index)].widget
+    if name == "X": target.position[0] = int(new_value)
+    elif name == "Y": target.position[1] = int(new_value)
+    elif name == "Rotation": target.rotation = int(new_value)
+    else: print("Invalid transform variable", name)
 
     return construct_full_update()
 
