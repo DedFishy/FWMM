@@ -3,6 +3,7 @@ const HEIGHT = 34;
 
 
 const availableWidgetList = document.getElementById("available-widget-list");
+const widgetLayout = document.getElementById("layout");
 const widgetTree = document.getElementById("widget-tree");
 
 var widgets = [];
@@ -37,7 +38,7 @@ function checkWidgetDiff(newWidgetList) {
     if (newWidgetList.length != widgets.length) return true;
     var isChanged = false;
     newWidgetList.forEach((value, index, array) => {
-        if (value["name"] != widgets[index]) {
+        if (value["name"] != widgets[index]["name"]) {
             isChanged = true;
             return;
         }
@@ -47,10 +48,15 @@ function checkWidgetDiff(newWidgetList) {
 function handleFullUpdate(update) {
     console.log("Recieved an update!");
     console.log(update);
-    if (checkWidgetDiff(update,["widgets"])) {
+    if (checkWidgetDiff(update["widgets"])) {
         widgetTree.innerHTML = "";
+        widgetLayout.innerHTML = "";
         update["widgets"].forEach((value, index, array) => {
-            constructOneWidget(value);
+            widgets.push(constructOneWidget(value));
+        });
+    } else {
+        update["widgets"].forEach((value, index, array) => {
+            updateLayoutObject(widgets[index].widgetLayoutObject, value["size"][0], value["size"][1], value["transform"]["X"], value["transform"]["Y"]);
         });
     }
     if (availableWidgetList.children.length != update["available"].length)
@@ -58,12 +64,24 @@ function handleFullUpdate(update) {
 
 }
 
+function updateLayoutObject(layoutObject, width, height, x, y) {
+    const scale = widgetLayout.clientWidth/9;
+    width *= scale;
+    height *= scale;
+    x *= scale;
+    y *= scale;
+    layoutObject.style.top = y + "px";
+    layoutObject.style.left = x + "px";
+    layoutObject.style.width = width + "px";
+    layoutObject.style.height = height + "px";
+}
+
 // Widget Tree
 async function sendConfigUpdate(widgetIndex, name, newValue) {
-    await getJSONFromPath("/updatewidgetconfig/" + widgetIndex + "/" + name + "/" + newValue)
+    handleFullUpdate(await getJSONFromPath("/updatewidgetconfig/" + widgetIndex + "/" + name + "/" + newValue));
 }
 async function sendTransformUpdate(widgetIndex, name, newValue) {
-    await getJSONFromPath("/updatewidgettransform/" + widgetIndex + "/" + name + "/" + newValue)
+    handleFullUpdate(await getJSONFromPath("/updatewidgettransform/" + widgetIndex + "/" + name + "/" + newValue));
 }
 async function createWidget(widget) {
     return await getJSONFromPath("/createwidget/" + widget)
@@ -95,21 +113,21 @@ function constructOneWidget(widgetMetadata) {
     widgetTransform.className = "widget-tree-transform";
     widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "X", {
         "item_type": 1,
-        "value": 0,
+        "value": widgetMetadata["transform"]["X"],
         "minimum": 0,
         "maximum": 10
     },
     true))
     widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "Y", {
         "item_type": 1,
-        "value": 0,
+        "value": widgetMetadata["transform"]["Y"],
         "minimum": 0,
         "maximum": 35
     },
     true))
     widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "Rotation", {
         "item_type": 6,
-        "value": 0,
+        "value": widgetMetadata["transform"]["Rotation"],
         "options": [0, 90, 180, 270]
     },
     true))
@@ -124,7 +142,17 @@ function constructOneWidget(widgetMetadata) {
 
     widgetTree.appendChild(widgetElement);
 
+    const widgetLayoutObject = document.createElement("div");
+    widgetLayoutObject.className = "widget-layout-object";
+    updateLayoutObject(widgetLayoutObject, widgetMetadata["size"][0], widgetMetadata["size"][1], widgetMetadata["transform"]["X"], widgetMetadata["transform"]["Y"]);
     
+    widgetLayout.appendChild(widgetLayoutObject);
+
+    return {
+        name: widgetMetadata["name"],
+        widgetLayoutObject: widgetLayoutObject,
+        widgetElement: widgetElement
+    }
 }
 
 function constructConfigItem(widgetIndex, name, meta, isTransform) {

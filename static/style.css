@@ -57,6 +57,8 @@ input[type=number]::-webkit-outer-spin-button {
 #layout {
     aspect-ratio: calc(9/34);
     height: 100%;
+    position: relative;
+    overflow: hidden;
 }
 #widget-tree {
     flex-grow: 1;
@@ -107,6 +109,11 @@ input[type=number]::-webkit-outer-spin-button {
     border-radius: 2px;
     filter: grayscale();
     font-size: 0.5em;
+}
+
+.widget-layout-object {
+    background-color: red;
+    position: absolute;
 }
 
 .dropdown-buttons {

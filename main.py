@@ -47,6 +47,12 @@ def construct_full_update():
             [{
                 "name": widget.widget.name,
                 "config": {item: widget.widget.configuration[item].serialize() for item in widget.widget.configuration.keys()},
+                "transform": {
+                    "X": widget.widget.position[0],
+                    "Y": widget.widget.position[1],
+                    "Rotation": widget.widget.rotation
+                },
+                "size": widget.widget.get_current_size(),
                 "index": layout_manager.widgets.index(widget)
                 } for widget in layout_manager.widgets],
         "available": list(widget_manager.widgets.keys())
@@ -107,6 +113,12 @@ async def update_widget_transform(request):
     else: print("Invalid transform variable", name)
 
     return construct_full_update()
+
+@routes.get("/updatenow")
+async def update_now(request):
+    layout_manager.render()
+    matrix_connector.flush_matrix()
+    return construct_json_response({})
 
 routes.static('/static', "static")
 
