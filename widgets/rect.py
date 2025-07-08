@@ -4,7 +4,7 @@ from widget_config_item import ConfigItemType as ConfigType
 from const import WIDTH, HEIGHT
 
 class Widget(WidgetBase):
-    name = "Rectangle of Glory"
+    name = "Rectangle"
     desired_spf = -1
     allow_rotation = False
 

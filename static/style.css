@@ -31,6 +31,31 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
 }
 
+
+/* Notifications */ 
+#notification-list {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+}
+.notification {
+    font-size: 1.5em;
+    margin: 10px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: var(--background-color-tertiary);
+    pointer-events: none;
+    opacity: 0;
+    transform: scaleY(0);
+    transition: 0.5s;
+}
+.notification.showing {
+    pointer-events: all;
+    opacity: 1;
+    transform: scaleY(1);
+}
+
 /* TOP */
 #top-bar {
     width: 100%;
@@ -42,6 +67,45 @@ input[type=number]::-webkit-outer-spin-button {
 }
 #title {
     margin: 0;
+}
+
+.dropdown-buttons {
+    height: 100%;
+    align-items: center;
+    font-size: 2em;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.dropdown-buttons-title {
+    height: 100%;
+}
+.dropdown-buttons-list {
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    opacity: 0;
+    transform: scaleY(0);
+    pointer-events: none;
+    transition: 0.2s;
+    background-color: var(--background-color-secondary);
+    z-index: 5;
+}
+.dropdown-buttons-list button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    outline: none;
+    font-size: 0.5em;
+    transition: 0.1s;
+    cursor: pointer;
+}
+.dropdown-buttons-list button:hover {
+    background-color: var(--background-color-tertiary)
+}
+.dropdown-buttons:hover .dropdown-buttons-list {
+    opacity: 1;
+    transform: scaleY(1);
+    pointer-events: all;
 }
 
 /* MIDDLE */
@@ -116,40 +180,19 @@ input[type=number]::-webkit-outer-spin-button {
     position: absolute;
 }
 
-.dropdown-buttons {
-    height: 100%;
-    align-items: center;
-    font-size: 2em;
-    margin-left: 10px;
-    margin-right: 10px;
-}
-.dropdown-buttons-title {
-    height: 100%;
-}
-.dropdown-buttons-list {
+
+
+/* BOTTOM */
+#bottom-bar {
     display: flex;
-    position: absolute;
-    flex-direction: column;
-    opacity: 0;
-    transform: scaleY(0);
-    pointer-events: none;
-    transition: 0.2s;
-    background-color: var(--background-color-secondary);
-    z-index: 5;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
-.dropdown-buttons-list button {
-    background-color: transparent;
+#bottom-bar button {
+    background-color: var(--background-color-secondary);
     color: white;
     border: none;
-    outline: none;
-    font-size: 0.5em;
-    transition: 0.1s;
-}
-.dropdown-buttons-list button:hover {
-    background-color: var(--background-color-tertiary)
-}
-.dropdown-buttons:hover .dropdown-buttons-list {
-    opacity: 1;
-    transform: scaleY(1);
-    pointer-events: all;
+    cursor: pointer;
 }

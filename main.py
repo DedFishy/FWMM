@@ -19,6 +19,7 @@ import platform_specific
 from aiohttp import web
 import webbrowser
 import os
+import filedialpy
 import font_loader # Recognized by freezer
 
 DEBUG = True
@@ -36,6 +37,11 @@ widget_manager = WidgetManager()
 
 platform_specific_functions = platform_specific.get_class()
 
+queued_notifications = []
+
+if len(widget_manager.errors.keys()) > 0:
+    queued_notifications.append("Failed to load widgets:\n" + "\n".join([error + ": " + widget_manager.errors[error] for error in widget_manager.errors.keys()]))
+
 app = web.Application()
 routes = web.RouteTableDef()
 
@@ -43,6 +49,7 @@ def construct_json_response(dictionary):
     return web.Response(text=json.dumps(dictionary), content_type="text/json")
 
 def construct_full_update():
+    global queued_notifications
     dictionary = {
         "widgets": 
             [{
@@ -57,8 +64,10 @@ def construct_full_update():
                 "color": widget.color,
                 "index": layout_manager.widgets.index(widget)
                 } for widget in layout_manager.widgets],
-        "available": list(widget_manager.widgets.keys())
+        "available": list(widget_manager.widgets.keys()),
+        "notifications": queued_notifications.copy()
     }
+    queued_notifications = []
     return construct_json_response(dictionary)
 
 @routes.get("/")
@@ -126,11 +135,56 @@ async def update_widget_transform(request):
 
     return construct_full_update()
 
+@routes.get("/deletewidget/{widget_index}")
+async def delete_widget(request):
+    widget_index = request.match_info.get("widget_index", None)
+    layout_manager.remove(layout_manager.widgets[int(widget_index)])
+    return construct_full_update()
+
 @routes.get("/updatenow")
 async def update_now(request):
     layout_manager.render()
     matrix_connector.flush_matrix()
     return construct_json_response({})
+
+@routes.get("/savelayout")
+async def save_layout(request):
+    file = filedialpy.saveFile(filter="*.mmw", title="Save layout")
+    if file:
+        layout_manager.selected_layout_file_path = file
+        layout_manager.selected_layout_file_name = file.split("/")[-1]
+        with open(layout_manager.selected_layout_file_path, "w+") as file:
+            file.write(json.dumps(layout_manager.generate_layout_dict()))
+    return construct_json_response({})
+
+def create_widget(widget, import_name, is_loaded=False, position=None, rotation=None, color=None, config=None, rerender=True):
+        widget_instance: Widget = widget()
+        widget_instance.import_name = import_name
+        if is_loaded:
+            if position: widget_instance.position = position
+            if rotation: widget_instance.rotation = rotation
+            if config: 
+                for field in config.keys():
+                    widget_instance.configuration[field].value = config[field]
+        layout_manager.add_widget(widget_instance, color + [255] if color is not None else None)
+        if rerender:
+            layout_manager.render()
+
+@routes.get("/loadlayout")
+async def load_layout(request):
+    file = filedialpy.openFile(filter="*.mmw", title="Load layout")
+    print(file)
+    if file:
+        layout_manager.selected_layout_file_path = file
+        layout_manager.selected_layout_file_name = file.split("/")[-1]
+        with open(layout_manager.selected_layout_file_path) as file:
+            layout = json.loads(file.read())
+            layout_manager.remove_all()
+            for widget in layout["widgets"]:
+                create_widget(widget_manager.widgets[widget["import_name"]], widget["import_name"], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"], rerender=False)
+        layout_manager.render()
+        matrix_connector.flush_matrix()
+    return construct_full_update()
 
 routes.static('/static', "static")
 

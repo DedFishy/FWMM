@@ -8,6 +8,11 @@
         <link rel="icon" type="image/x-icon" href="/static/icon.ico">
     </head>
     <body>
+
+        <div id="notification-list">
+
+        </div>
+
         <div id="top-bar">
             <h1 id="title">Framework Matrix Manager</h1>
 
@@ -15,7 +20,7 @@
                 <div class="dropdown-buttons-title">Layout</div>
                 <div class="dropdown-buttons-list">
                     <button onclick="loadLayout()">Load Layout</button>
-                    <button>Save Layout</button>
+                    <button onclick="saveLayout()">Save Layout</button>
                     <button>Set Layout As Default</button>
                 </div>
             </div>
@@ -46,6 +51,7 @@
         
         <div id="bottom-bar">
             <div class="bottom-bar-chip">FWMM by DedFishy</div>
+            <button onclick="updateNow()">Write to Matrix</button>
         </div>
 
         <script type="text/javascript" src="/static/socketio.js"></script>

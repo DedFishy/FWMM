@@ -3,8 +3,10 @@ from widget import Widget as WidgetBase
 from widget_config_item import WidgetConfigItem as Config
 from widget_config_item import ConfigItemType as ConfigType
 from const import WIDTH, HEIGHT
-import plyer
+import psutil
 import numpy as np
+
+battery = psutil.sensors_battery()
 
 class Widget(WidgetBase):
     name = "Bar"
@@ -13,7 +15,9 @@ class Widget(WidgetBase):
 
     fill_sources = {
         "None": lambda w: 0,
-        "Battery": lambda w: plyer.battery.status["percentage"]/100, # type: ignore
+        "Battery": lambda w: battery.percent/100,
+        "CPU Usage": lambda w: psutil.cpu_percent(0)/100,
+        "RAM Usage": lambda w: psutil.virtual_memory().percent/100
     }
 
     def __init__(self):

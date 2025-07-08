@@ -9,8 +9,8 @@ class LayoutManager:
     matrix: Matrix
     flush_callback: Callable
 
-    selected_layout_file_path = None
-    selected_layout_file_name = None
+    selected_layout_file_path = ""
+    selected_layout_file_name = ""
 
     def __init__(self, matrix: Matrix, flush_callback: Callable):
         self.matrix = matrix

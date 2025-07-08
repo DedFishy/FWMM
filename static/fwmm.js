@@ -5,6 +5,7 @@ const HEIGHT = 34;
 const availableWidgetList = document.getElementById("available-widget-list");
 const widgetLayout = document.getElementById("layout");
 const widgetTree = document.getElementById("widget-tree");
+const notificationList = document.getElementById("notification-list");
 
 var widgets = [];
 
@@ -45,10 +46,10 @@ function checkWidgetDiff(newWidgetList) {
     });
     return isChanged;
 }
-function handleFullUpdate(update) {
+function handleFullUpdate(update, forceReloadWidgets = false) {
     console.log("Recieved an update!");
     console.log(update);
-    if (checkWidgetDiff(update["widgets"])) {
+    if (forceReloadWidgets || checkWidgetDiff(update["widgets"])) {
         widgetTree.innerHTML = "";
         widgetLayout.innerHTML = "";
         update["widgets"].forEach((value, index, array) => {
@@ -56,24 +57,47 @@ function handleFullUpdate(update) {
         });
     } else {
         update["widgets"].forEach((value, index, array) => {
-            updateLayoutObject(widgets[index].widgetLayoutObject, value["size"][0], value["size"][1], value["transform"]["X"], value["transform"]["Y"]);
+            updateLayoutObject(widgets[index].widgetLayoutObject, value["size"][0], value["size"][1], value["transform"]["X"], value["transform"]["Y"], value["transform"]["Rotation"]);
         });
     }
     if (availableWidgetList.children.length != update["available"].length)
         constructAvailableWidgetList(update["available"]);
 
+    update["notifications"].forEach((value, index, array) => {
+        showNotification(value);
+    })
+
 }
 
-function updateLayoutObject(layoutObject, width, height, x, y) {
-    const scale = widgetLayout.clientWidth/9;
+function updateLayoutObject(layoutObject, width, height, x, y, rotation) {
+    const scale = widgetLayout.offsetWidth/WIDTH;
     width *= scale;
     height *= scale;
     x *= scale;
     y *= scale;
+    if (((rotation / 90) % 2) != 0) {
+        const temp = width;
+        width = height;
+        height = temp;
+    }
     layoutObject.style.top = y + "px";
     layoutObject.style.left = x + "px";
     layoutObject.style.width = width + "px";
     layoutObject.style.height = height + "px";
+}
+
+function showNotification(text) {
+    const notificationElement = document.createElement("div");
+    notificationElement.className = "notification";
+    notificationElement.innerText = text;
+    notificationList.appendChild(notificationElement);
+
+    notificationElement.onclick = (event) => {
+        notificationElement.classList.remove("showing");
+        setTimeout(() => {notificationElement.remove();}, 500);
+    }
+    setTimeout(notificationElement.onclick, 5000);
+    notificationElement.classList.add("showing");
 }
 
 // Widget Tree
@@ -85,6 +109,12 @@ async function sendTransformUpdate(widgetIndex, name, newValue) {
 }
 async function sendColorUpdate(widgetIndex, newValue) {
     await getJSONFromPath("/updatewidgetcolor/" + widgetIndex + "/" + newValue);
+}
+async function sendDeleteUpdate(widgetIndex) {
+    handleFullUpdate(await getJSONFromPath("/deletewidget/" + widgetIndex));
+}
+async function updateNow() {
+    await fetch("/updatenow");
 }
 async function createWidget(widget) {
     return await getJSONFromPath("/createwidget/" + widget)
@@ -119,6 +149,14 @@ function constructOneWidget(widgetMetadata) {
     widgetNameIndicator.className = "widget-tree-name-indicator";
     widgetNameIndicator.innerText = widgetMetadata["name"];
     widgetElement.appendChild(widgetNameIndicator); 
+
+    const widgetDel = document.createElement("button");
+    widgetDel.className = "delete";
+    widgetDel.innerText = "Delete";
+    widgetDel.onclick = (event) => {
+        sendDeleteUpdate(widgetMetadata["index"]);
+    }
+    widgetElement.appendChild(widgetDel);
 
     const color = widgetMetadata["color"];
     const colorHex = rgbToHex(color[0], color[1], color[2])
@@ -162,7 +200,7 @@ function constructOneWidget(widgetMetadata) {
 
     const widgetLayoutObject = document.createElement("div");
     widgetLayoutObject.className = "widget-layout-object";
-    updateLayoutObject(widgetLayoutObject, widgetMetadata["size"][0], widgetMetadata["size"][1], widgetMetadata["transform"]["X"], widgetMetadata["transform"]["Y"]);
+    updateLayoutObject(widgetLayoutObject, widgetMetadata["size"][0], widgetMetadata["size"][1], widgetMetadata["transform"]["X"], widgetMetadata["transform"]["Y"], widgetMetadata["transform"]["Rotation"]);
     widgetLayoutObject.style.backgroundColor = colorHex;
 
     widgetColor.onchange = (event) => {
@@ -272,14 +310,11 @@ function constructConfigItem(widgetIndex, name, meta, isTransform) {
 }
 
 // Layout Menu
-function loadLayout() {
-    const filePicker = document.createElement("input");
-    filePicker.type = "file";
-    filePicker.accept = ".mmw";
-    filePicker.onchange = e => {
-        console.log(e.target.files[0]);
-    };
-    filePicker.click();
+async function loadLayout() {
+    handleFullUpdate(await getJSONFromPath("/loadlayout"), true);
+}
+function saveLayout() {
+    fetch("/savelayout");
 }
 
 // Setup
