@@ -29,7 +29,7 @@ class LayoutManager:
                     "position": widget.widget.position,
                     "rotation": widget.widget.rotation,
                     "color": widget.color,
-                    "import_name": widget.widget.import_name,
+                    "import_name": widget.widget.import_name, # type: ignore
                     "configuration": {field: widget.widget.configuration[field].value for field in widget.widget.configuration.keys()}
                 } for widget in self.widgets
             ]

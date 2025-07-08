@@ -52,6 +52,7 @@ function handleFullUpdate(update, forceReloadWidgets = false) {
     if (forceReloadWidgets || checkWidgetDiff(update["widgets"])) {
         widgetTree.innerHTML = "";
         widgetLayout.innerHTML = "";
+        widgets = []
         update["widgets"].forEach((value, index, array) => {
             widgets.push(constructOneWidget(value));
         });
@@ -114,7 +115,7 @@ async function sendDeleteUpdate(widgetIndex) {
     handleFullUpdate(await getJSONFromPath("/deletewidget/" + widgetIndex));
 }
 async function updateNow() {
-    await fetch("/updatenow");
+    handleFullUpdate(await getJSONFromPath("/updatenow"));
 }
 async function createWidget(widget) {
     return await getJSONFromPath("/createwidget/" + widget)
@@ -154,6 +155,7 @@ function constructOneWidget(widgetMetadata) {
     widgetDel.className = "delete";
     widgetDel.innerText = "Delete";
     widgetDel.onclick = (event) => {
+
         sendDeleteUpdate(widgetMetadata["index"]);
     }
     widgetElement.appendChild(widgetDel);
@@ -315,6 +317,13 @@ async function loadLayout() {
 }
 function saveLayout() {
     fetch("/savelayout");
+}
+function setDefaultLayout() {
+    fetch("/setdefaultlayout");
+}
+function stopServer() {
+    document.body.innerHTML = "<div class='centered'><h1>FWMM is shutting down.</h1><h4>You may close this tab.</h4></div>"
+    fetch("/stop");
 }
 
 // Setup

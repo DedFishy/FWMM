@@ -21,6 +21,10 @@ import webbrowser
 import os
 import filedialpy
 import font_loader # Recognized by freezer
+import signal
+
+def shutdown():
+    signal.raise_signal(signal.SIGTERM)
 
 DEBUG = True
 
@@ -110,6 +114,8 @@ async def update_widget_config(request):
     new_value = request.match_info.get("new_value", None)
     layout_manager.widgets[int(widget_index)].widget.configuration[name].update_value(new_value)
 
+    layout_manager.render()
+
     return construct_full_update()
 
 @routes.get("/updatewidgetcolor/{widget_index}/{new_value}")
@@ -145,7 +151,7 @@ async def delete_widget(request):
 async def update_now(request):
     layout_manager.render()
     matrix_connector.flush_matrix()
-    return construct_json_response({})
+    return construct_full_update()
 
 @routes.get("/savelayout")
 async def save_layout(request):
@@ -170,21 +176,38 @@ def create_widget(widget, import_name, is_loaded=False, position=None, rotation=
         if rerender:
             layout_manager.render()
 
+def load_layout_path(file):
+    layout_manager.selected_layout_file_path = file
+    layout_manager.selected_layout_file_name = file.split("/")[-1]
+    with open(layout_manager.selected_layout_file_path) as file:
+        layout = json.loads(file.read())
+        layout_manager.remove_all()
+        for widget in layout["widgets"]:
+            create_widget(widget_manager.widgets[widget["import_name"]], widget["import_name"], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"], rerender=False)
+    layout_manager.render()
+    matrix_connector.flush_matrix()
+
 @routes.get("/loadlayout")
 async def load_layout(request):
     file = filedialpy.openFile(filter="*.mmw", title="Load layout")
     print(file)
     if file:
-        layout_manager.selected_layout_file_path = file
-        layout_manager.selected_layout_file_name = file.split("/")[-1]
-        with open(layout_manager.selected_layout_file_path) as file:
-            layout = json.loads(file.read())
-            layout_manager.remove_all()
-            for widget in layout["widgets"]:
-                create_widget(widget_manager.widgets[widget["import_name"]], widget["import_name"], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"], rerender=False)
-        layout_manager.render()
-        matrix_connector.flush_matrix()
+        load_layout_path(file)
     return construct_full_update()
+
+@routes.get("/setdefaultlayout")
+async def set_default_layout(request):
+    config.default_layout = layout_manager.selected_layout_file_path
+    config.save_config()
+    print("Set default to:", layout_manager.selected_layout_file_path)
+    return construct_json_response({})
+
+@routes.get("/stop")
+async def stop_server(request):
+    global running
+    running = False
+    shutdown()
+    return construct_json_response({})
 
 routes.static('/static', "static")
 
@@ -228,11 +251,8 @@ def set_matrix_pixel(x, y, value):
 
 def load_config():
     pass
-    #if config.default_layout:
-    #    window.load_widget_layout(None, {
-    #        "file_path_name": config.default_layout,
-    #        "file_name": Path(config.default_layout).name
-    #    })
+    if config.default_layout:
+        load_layout_path(config.default_layout)
 
 async def background_tasks(app):
     global running
@@ -285,6 +305,8 @@ def main():
     
     print("config")
     load_config()
+
+
 
     app.cleanup_ctx.append(background_tasks)
 

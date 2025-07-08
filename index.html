@@ -21,14 +21,14 @@
                 <div class="dropdown-buttons-list">
                     <button onclick="loadLayout()">Load Layout</button>
                     <button onclick="saveLayout()">Save Layout</button>
-                    <button>Set Layout As Default</button>
+                    <button onclick="setDefaultLayout()">Set Layout As Default</button>
                 </div>
             </div>
 
             <div class="dropdown-buttons">
                 <div class="dropdown-buttons-title">Control</div>
                 <div class="dropdown-buttons-list">
-                    <button>Stop</button>
+                    <button onclick="stopServer()">Stop</button>
                     <button>Add to Startup</button>
                 </div>
             </div>
@@ -41,7 +41,10 @@
             </div>
 
             <div id="widget-tree">
-
+                <div class="centered">
+                    <h1>No Widgets!</h1>
+                    <h4>Drag widgets from the list on the right into this pane to add them to your layout</h4>
+                </div>
             </div>
 
             <div id="available-widget-list">
@@ -51,7 +54,7 @@
         
         <div id="bottom-bar">
             <div class="bottom-bar-chip">FWMM by DedFishy</div>
-            <button onclick="updateNow()">Write to Matrix</button>
+            <button onclick="updateNow()">Render Now</button>
         </div>
 
         <script type="text/javascript" src="/static/socketio.js"></script>

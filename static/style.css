@@ -15,11 +15,17 @@
 body {
     width: 100vw;
     height: 100dvh;
+    max-height: 100dvh;
     margin: 0;
     padding: 0;
     font-family: DefaultFont, sans-serif;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+html {
+    height: 100dvh;
+    max-height: 100dvh;
 }
 input[type="number"] {
   -webkit-appearance: textfield;
@@ -113,6 +119,7 @@ input[type=number]::-webkit-outer-spin-button {
     flex-grow: 1;
     display: flex;
     flex-direction: row;
+    min-height: 0;
 }
 #middle > div, #middle > canvas {
     border: 5px solid var(--background-color-secondary);
@@ -127,6 +134,7 @@ input[type=number]::-webkit-outer-spin-button {
 #widget-tree {
     flex-grow: 1;
     overflow-y: scroll;
+
 }
 
 #available-widget-list {
@@ -135,6 +143,16 @@ input[type=number]::-webkit-outer-spin-button {
 }
 .available-widget {
 
+}
+
+.centered {
+    text-align: center;
+    margin: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .widget-tree-widget-container {
