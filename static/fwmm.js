@@ -83,6 +83,9 @@ async function sendConfigUpdate(widgetIndex, name, newValue) {
 async function sendTransformUpdate(widgetIndex, name, newValue) {
     handleFullUpdate(await getJSONFromPath("/updatewidgettransform/" + widgetIndex + "/" + name + "/" + newValue));
 }
+async function sendColorUpdate(widgetIndex, newValue) {
+    await getJSONFromPath("/updatewidgetcolor/" + widgetIndex + "/" + newValue);
+}
 async function createWidget(widget) {
     return await getJSONFromPath("/createwidget/" + widget)
 }
@@ -92,6 +95,14 @@ widgetTree.ondrop = async (event) => {
     event.preventDefault();
     
     handleFullUpdate(await createWidget(event.dataTransfer.getData("widgetName")));
+}
+
+function componentToHex(c) {
+  let hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 function constructOneWidget(widgetMetadata) {
@@ -108,6 +119,13 @@ function constructOneWidget(widgetMetadata) {
     widgetNameIndicator.className = "widget-tree-name-indicator";
     widgetNameIndicator.innerText = widgetMetadata["name"];
     widgetElement.appendChild(widgetNameIndicator); 
+
+    const color = widgetMetadata["color"];
+    const colorHex = rgbToHex(color[0], color[1], color[2])
+    const widgetColor = document.createElement("input");
+    widgetColor.type = "color";
+    widgetColor.value = colorHex;
+    widgetElement.appendChild(widgetColor);
 
     const widgetTransform = document.createElement("div");
     widgetTransform.className = "widget-tree-transform";
@@ -145,6 +163,13 @@ function constructOneWidget(widgetMetadata) {
     const widgetLayoutObject = document.createElement("div");
     widgetLayoutObject.className = "widget-layout-object";
     updateLayoutObject(widgetLayoutObject, widgetMetadata["size"][0], widgetMetadata["size"][1], widgetMetadata["transform"]["X"], widgetMetadata["transform"]["Y"]);
+    widgetLayoutObject.style.backgroundColor = colorHex;
+
+    widgetColor.onchange = (event) => {
+        const newColor = widgetColor.value;
+        widgetLayoutObject.style.backgroundColor = newColor;
+        sendColorUpdate(widgetMetadata["index"], newColor.replace("#", ""));
+    }
     
     widgetLayout.appendChild(widgetLayoutObject);
 

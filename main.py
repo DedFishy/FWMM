@@ -1,6 +1,7 @@
 import asyncio
 import json
 from pathlib import Path
+import random
 import time
 from PIL import Image
 from config import Config
@@ -53,6 +54,7 @@ def construct_full_update():
                     "Rotation": widget.widget.rotation
                 },
                 "size": widget.widget.get_current_size(),
+                "color": widget.color,
                 "index": layout_manager.widgets.index(widget)
                 } for widget in layout_manager.widgets],
         "available": list(widget_manager.widgets.keys())
@@ -83,6 +85,7 @@ async def available_widgets(request):
 async def widget_meta(request):
     widget_name = request.match_info.get("widget", None)
     widget = widget_manager.widgets[widget_name]() # type: ignore
+    widget.color = (random.randint(0, 255) for _ in range(3))
 
     layout_manager.add_widget(widget)
 
@@ -99,6 +102,15 @@ async def update_widget_config(request):
     layout_manager.widgets[int(widget_index)].widget.configuration[name].update_value(new_value)
 
     return construct_full_update()
+
+@routes.get("/updatewidgetcolor/{widget_index}/{new_value}")
+async def update_widget_color(request):
+    widget_index = request.match_info.get("widget_index", None)
+    print(widget_index)
+    new_value = request.match_info.get("new_value", None)
+    layout_manager.widgets[int(widget_index)].color = tuple(int(new_value.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+
+    return construct_json_response({})
 
 @routes.get("/updatewidgettransform/{widget_index}/{name}/{new_value}")
 async def update_widget_transform(request):
