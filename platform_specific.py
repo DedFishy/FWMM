@@ -9,6 +9,8 @@ class PlatformSpecificFunctions:
 
     def add_self_to_startup(self): pass
 
+    def remove_self_from_startup(self): pass
+
 class Windows(PlatformSpecificFunctions):
     startup_location = ""
     is_frozen = False
@@ -29,6 +31,10 @@ class Windows(PlatformSpecificFunctions):
             script += "\ncd " + str(Path(os.path.abspath(__file__)).parent.resolve())
             script += "\nstart " + self.get_self_start_command() + " skip-window"
             startup_script.write(script)
+        return True
+
+    def remove_self_from_startup(self):
+        Path(os.path.join(self.startup_location, "FWMM.bat")).unlink(True)
         return True
 
 class Linux(PlatformSpecificFunctions):
@@ -61,6 +67,12 @@ class Linux(PlatformSpecificFunctions):
             startup_script.write(script)
 
         success = (os.system("systemctl daemon-reload") + os.system("systemctl enable fwmm.service") == 0)
+        return success
+
+    def remove_self_from_startup(self):
+        success = (os.system("systemctl disable fwmm.service") + os.system("systemctl daemon-reload") == 0)
+
+        Path(os.path.join(self.startup_location, "fwmm.service")).unlink(True)
         return success
 
 

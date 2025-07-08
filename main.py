@@ -235,6 +235,21 @@ async def add_to_startup(request):
         result = "An unknown error occurred, check terminal output"
     return construct_json_response({"result": result})
 
+@routes.get("/removefromstartup")
+async def remove_from_startup(request):
+    result = "Successfully removed from system startup"
+    success = True
+    try:
+        success = platform_specific_functions.remove_self_from_startup()
+    except PermissionError:
+        result = "Couldn't write to startup folder (systemd on Linux), run FWMM as root"
+    except Exception as e:
+        result = "Couldn't remove from startup: " + str(e)
+    
+    if not success:
+        result = "An unknown error occurred, check terminal output"
+    return construct_json_response({"result": result})
+
 routes.static('/static', "static")
 
     
