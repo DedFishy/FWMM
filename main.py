@@ -71,7 +71,8 @@ def construct_full_update():
                 },
                 "size": widget.widget.get_current_size(),
                 "color": widget.color,
-                "index": layout_manager.widgets.index(widget)
+                "index": layout_manager.widgets.index(widget),
+                "can_rotate": widget.widget.allow_rotation,
                 } for widget in layout_manager.widgets],
         "available": list(widget_manager.widgets.keys()),
         "notifications": queued_notifications.copy()

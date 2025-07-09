@@ -157,6 +157,8 @@ function rgbToHex(r, g, b) {
 function constructOneWidget(widgetMetadata) {
     console.log("Rendering widget with metadata:")
     console.log(widgetMetadata)
+    console.log("CAN ROTATE?")
+    console.log(widgetMetadata["can_rotate"])
     const widgetElement = document.createElement("div");
     widgetElement.className = "widget-tree-widget-container";
 
@@ -207,12 +209,18 @@ function constructOneWidget(widgetMetadata) {
         "maximum": 35
     },
     true))
-    widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "Rotation", {
-        "item_type": 6,
-        "value": widgetMetadata["transform"]["Rotation"],
-        "options": [0, 90, 180, 270]
-    },
-    true))
+
+    
+
+    if (widgetMetadata["can_rotate"] == true) {
+        widgetTransform.appendChild(constructConfigItem(widgetMetadata["index"], "Rotation", {
+            "item_type": 6,
+            "value": widgetMetadata["transform"]["Rotation"],
+            "options": [0, 90, 180, 270]
+        },
+        true))
+    }
+
     widgetElement.appendChild(widgetTransform);
 
     const widgetConfig = document.createElement("div");
