@@ -42,7 +42,7 @@ class Linux(PlatformSpecificFunctions):
     startup_location = ""
     is_frozen = False
     def __init__(self):
-        self.startup_location = "/etc/systemd/system"
+        self.startup_location = "/etc/systemd/user"
         self.is_frozen = getattr(sys, 'frozen', False)
     
     def get_self_start_command(self):
@@ -57,29 +57,22 @@ class Linux(PlatformSpecificFunctions):
         return str(Path(os.path.abspath(__file__)).parent.resolve())
 
     def add_self_to_startup(self):
-        with open(os.path.join(self.startup_location, "fwmm.service"), "w+") as startup_script:
-            script = "[Unit]"
-            script += "\nDescription=Framework Matrix Manager service"
-            script += "\n[Service]"
-            script += "\nType=simple"
-            script += "\nRemainAfterExit=yes"
-            script += "\nWorkingDirectory=" + self.get_working_directory()
-            script += "\nExecStart=" + self.get_self_start_command() + " skip-window"
-            script += "\nRestart=always"
-            script += "\nTimeoutStartSec=0"
-            script += "\nEnvironment=PYTHONUNBUFFERED=1"
-            script += "\n[Install]"
-            script += "\nWantedBy=multi-user.target"
-            startup_script.write(script)
-
-        success = (os.system("systemctl daemon-reload") + os.system("systemctl enable fwmm.service") == 0)
-        return success
+        self.remove_self_from_startup() # Prevent duplicates
+        from crontab import CronTab
+        cron = CronTab(user=True)
+        job = cron.new(command=f"cd '{self.get_working_directory()}' && {self.get_self_start_command()} skip-window", comment="FWMM")
+        job.every_reboot()
+        cron.write()
+        return True
 
     def remove_self_from_startup(self):
-        success = (os.system("systemctl disable fwmm.service") + os.system("systemctl daemon-reload") == 0)
-
-        Path(os.path.join(self.startup_location, "fwmm.service")).unlink(True)
-        return success
+        from crontab import CronTab
+        cron = CronTab(user=True)
+        jobs = cron.find_comment("FWMM")
+        for job in jobs:
+            cron.remove(job)
+        cron.write()
+        return True
 
 
 def get_class() -> PlatformSpecificFunctions:

@@ -232,6 +232,8 @@ def load_layout_path(file):
     layout_manager.selected_layout_file_name = file.split("/")[-1]
     with open(layout_manager.selected_layout_file_path) as file:
         layout = json.loads(file.read())
+
+        print("Layout content:", layout)
         layout_manager.remove_all()
         for widget in layout["widgets"]:
             create_widget(widget_manager.widgets[widget["import_name"]], widget["import_name"], True, widget["position"], widget["rotation"], widget["color"], widget["configuration"], rerender=False)
@@ -266,7 +268,8 @@ async def add_to_startup(request):
     success = True
     try:
         success = platform_specific_functions.add_self_to_startup()
-    except PermissionError:
+    except PermissionError as e:
+        print(e)
         result = "Couldn't write to startup folder (systemd on Linux), run FWMM as root"
     except Exception as e:
         result = "Couldn't add to startup: " + str(e)
@@ -331,8 +334,9 @@ def set_matrix_pixel(x, y, value):
     #window.set_preview_pixel(x, y, value)
 
 def load_config():
-    pass
+    print(config, config.default_layout)
     if config.default_layout:
+        print("Loading layout:" + config.default_layout)
         load_layout_path(config.default_layout)
 
 async def background_tasks(app):
@@ -394,8 +398,6 @@ def main():
         print("Opening web page")
         webbrowser.open("http://127.0.0.1:5621")
 
-    app.cleanup_ctx.append(background_tasks)
-
     web.run_app(app, host="127.0.0.1", port=5621)
     running = False
 
@@ -413,4 +415,4 @@ if __name__ == "__main__":
         try:
             main()
         except Exception as e:
-            print(e)
+            raise e
