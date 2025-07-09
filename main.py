@@ -1,19 +1,15 @@
 import asyncio
 import json
-from pathlib import Path
 import random
 import time
-from PIL import Image
 from config import Config
 import util
 import detect
-from const import WIDTH, HEIGHT, MATRIX_SCALE, MATRIX_OFFSET
 from matrix import Matrix
 from matrix_connector import MatrixConnector
 from widget import Widget
 from widget_manager import WidgetManager
 from layout_manager import LayoutManager
-from widget_layout_object import WidgetObjectLayout
 import sys
 import platform_specific
 from aiohttp import web

@@ -1,0 +1,10 @@
+# On ALL systems
+filedialpy
+pyserial
+aiohttp
+numpy
+
+# On Linux
+python_crontab
+# On Windows
+winshell

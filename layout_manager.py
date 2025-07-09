@@ -19,7 +19,6 @@ class LayoutManager:
     def add_widget(self, widget: Widget, color=None):
         widget_object_layout = WidgetObjectLayout(widget, self, color)
         self.widgets.append(widget_object_layout)
-        widget_object_layout.create_dpg()
         return widget_object_layout
 
     def generate_layout_dict(self):
@@ -36,18 +35,11 @@ class LayoutManager:
         }
 
     def remove_all(self):
-        for widget in self.widgets:
-            widget.destroy()
         self.widgets = []
 
     def remove(self, widget):
         self.widgets.remove(widget)
         self.render()
-
-    def collapse_all(self):
-        for widget in self.widgets:
-            if widget.showing_config:
-                widget.toggle_showing_config()
 
     def get_desired_spf(self):
         spf = -1
