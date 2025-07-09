@@ -22,7 +22,7 @@ import os
 import filedialpy
 import font_loader # Recognized by freezer
 import signal
-from plyer import notification
+
 
 def shutdown():
     signal.raise_signal(signal.SIGTERM)
@@ -30,6 +30,8 @@ def shutdown():
 DEBUG = False
 
 running = True
+
+error = ""
 
 num_sockets_connected = 0
 
@@ -50,6 +52,11 @@ if len(widget_manager.errors.keys()) > 0:
 
 app = web.Application()
 routes = web.RouteTableDef()
+
+def get_local_path(path):
+    if platform_specific_functions.is_frozen:
+        return "_internal/" + path
+    return path
 
 def construct_json_response(dictionary):
     return web.Response(text=json.dumps(dictionary), content_type="text/json")
@@ -76,20 +83,53 @@ def construct_full_update():
     queued_notifications = []
     return construct_json_response(dictionary)
 
+with open(get_local_path("index.html"), "r+") as index_file:
+    html = index_file.read()
+with open(get_local_path("static/fwmm.js"), "r+") as fwmm_js:
+    js = fwmm_js.read()
+with open(get_local_path("static/style.css"), "r+") as css_file:
+    css = css_file.read()
+
 @routes.get("/")
 async def index_handler(request):
-    with open("index.html", "r+") as index_file:
-        return web.Response(text=index_file.read(), content_type="text/html")
+    global error
+    if not running:
+        error = str(error)
+        if "[Errno 13]" in error:
+            error = "Permission to access your matrix was denied. Please run 'sudo chmod 666 " + error.split(" ")[-1].replace("'", "") + "' to allow FWMM to connect to your input module."
+        return web.Response(body=f"""
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Error!</title>
+        <link rel="stylesheet" href="/style.css">
+        <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    </head>
+    <body id='error'>
+        <h1>Couldn't connect to LED matrix</h1>
+        <h2>{str(error)}</h2>
+        <button onclick='fetch("/stop"); document.body.innerHTML = "<h1>FWMM has shut down.</h1>"'>Got it</button>
+    </body>
+</html>""", content_type="text/html")
+    if DEBUG:
+        with open(get_local_path("index.html"), "r+") as index_file:
+            return web.Response(text=index_file.read(), content_type="text/html")
+    return web.Response(text=html, content_type="text/html")
     
 @routes.get("/fwmm.js")
 async def js_handler(request):
-    with open("static/fwmm.js", "r+") as fwmm_js:
-        return web.Response(text=fwmm_js.read(), content_type="text/javascript")
+    if DEBUG:
+        with open(get_local_path("static/fwmm.js"), "r+") as fwmm_js:
+            return web.Response(text=fwmm_js.read(), content_type="text/javascript")
+    return web.Response(text=js, content_type="text/javascript")
 
 @routes.get("/style.css")
 async def css_handler(request):
-    with open("static/style.css", "r+") as css:
-        return web.Response(text=css.read(), content_type="text/css")
+    global css
+    if DEBUG:
+        with open(get_local_path("static/style.css"), "r+") as css:
+            return web.Response(text=css.read(), content_type="text/css")
+    return web.Response(text=css, content_type="text/css")
     
 # API Definitiions
 @routes.get("/initial")
@@ -250,7 +290,7 @@ async def remove_from_startup(request):
         result = "An unknown error occurred, check terminal output"
     return construct_json_response({"result": result})
 
-routes.static('/static', "static")
+routes.static('/static', get_local_path("static"))
 
     
 app.add_routes(routes)
@@ -330,7 +370,7 @@ async def matrix_update_loop():
                 print("Failed to write to serial:", e)
 
 def main():
-    global running
+    global running, error
     skip_window = "skip-window" in sys.argv
     print("skip window? :", skip_window)
 
@@ -341,17 +381,10 @@ def main():
 
     if not matrix_connector.is_connected():
         print("Couldn't connect to LED matrix:", error)
-        error = str(error)
-        if "[Errno 13]" in error:
-            error = "Permission to access your matrix was denied. Please run 'sudo chmod 666 " + error.split(" ")[-1].replace("'", "") + "' to allow FWMM to connect to your input module."
-        notification.notify(title="Couldn't connect to LED matrix", message=str(error), app_name="FWMM") # type: ignore
-        raise SystemExit
-    
-    
-    print("config")
-    load_config()
-
-
+        running = False
+    else:
+        print("config")
+        load_config()
 
     app.cleanup_ctx.append(background_tasks)
 
@@ -380,4 +413,4 @@ if __name__ == "__main__":
         try:
             main()
         except Exception as e:
-            notification.notify(title="FWMM has crashed", message=str(e), app_name="FWMM") # type: ignore
+            print(e)

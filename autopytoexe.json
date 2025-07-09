@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "C:/Users/Boyne/Projects/FWMM/main.py"
+   "value": "/home/boyne/Projects/FWMM/main.py"
   },
   {
    "optionDest": "onefile",
@@ -19,7 +19,7 @@
   },
   {
    "optionDest": "icon_file",
-   "value": "C:/Users/Boyne/Projects/FWMM/icon.ico"
+   "value": "/home/boyne/Projects/FWMM/static/icon.ico"
   },
   {
    "optionDest": "name",
@@ -59,27 +59,27 @@
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Boyne/Projects/FWMM/widgets;./widgets/"
+   "value": "/home/boyne/Projects/FWMM/fonts.json:."
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Boyne/Projects/FWMM/icon.ico;."
+   "value": "/home/boyne/Projects/FWMM/icon.png:."
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Boyne/Projects/FWMM/icon.png;."
+   "value": "/home/boyne/Projects/FWMM/static:static/"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Boyne/Projects/FWMM/font.ttf;."
+   "value": "/home/boyne/Projects/FWMM/widgets:widgets/"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Boyne/Projects/FWMM/OFL.txt;."
+   "value": "/home/boyne/Projects/FWMM/fonts:fonts/"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Boyne/Projects/FWMM/fonts;fonts/"
+   "value": "/home/boyne/Projects/FWMM/index.html:."
   }
  ],
  "nonPyinstallerOptions": {

@@ -5,6 +5,7 @@ import sys
 import util
 
 class PlatformSpecificFunctions:
+    is_frozen = False
     def __init__(self): pass
 
     def add_self_to_startup(self): pass
@@ -49,6 +50,11 @@ class Linux(PlatformSpecificFunctions):
             return str(Path(sys.executable).resolve())
         else:
             return str(Path(sys.executable).parent.resolve()) + "/python main.py"
+    
+    def get_working_directory(self):
+        if self.is_frozen:
+            return str(Path(os.path.abspath(__file__)).parent.parent.resolve())
+        return str(Path(os.path.abspath(__file__)).parent.resolve())
 
     def add_self_to_startup(self):
         with open(os.path.join(self.startup_location, "fwmm.service"), "w+") as startup_script:
@@ -57,7 +63,7 @@ class Linux(PlatformSpecificFunctions):
             script += "\n[Service]"
             script += "\nType=simple"
             script += "\nRemainAfterExit=yes"
-            script += "\nWorkingDirectory=" + str(Path(os.path.abspath(__file__)).parent.resolve())
+            script += "\nWorkingDirectory=" + self.get_working_directory()
             script += "\nExecStart=" + self.get_self_start_command() + " skip-window"
             script += "\nRestart=always"
             script += "\nTimeoutStartSec=0"

@@ -37,6 +37,25 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
 }
 
+#error {
+    background-color: black;
+    color: white;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+}
+#error button {
+    width: fit-content;
+    align-self: center;
+    color: white;
+    background-color: var(--background-color-secondary);
+    font-size: 1.2em;
+    border: none;
+    border-radius: 5px;
+}
+
 
 /* Notifications */ 
 #notification-list {
