@@ -1,1 +1,1 @@
-{"widgets": [{"position": [0, 0], "rotation": 90, "color": [87, 87, 122, 255], "import_name": "clock", "configuration": {"Brightness": 255, "Twelve Hour": true, "Font": "Massive"}}]}
+{"widgets": [{"position": [0, 0], "rotation": 90, "color": [87, 87, 122, 255, 255], "import_name": "clock", "configuration": {"Brightness": 255, "Twelve Hour": true, "Font": "Massive"}}]}
