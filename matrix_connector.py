@@ -57,6 +57,7 @@ GAME_CONTROLS = {
 }
 
 class MatrixConnector:
+   """Represents a connection to the LED matrix, essentially forming an API for interacting with it without directly using serial."""
    CONNECTION: serial.Serial
    PORT = "COM3"
    BAUD_RATE = 115200
@@ -68,7 +69,8 @@ class MatrixConnector:
 
      self.matrix = matrix
 
-   def is_connected(self):
+   def is_connected(self): 
+      """Returns whether we are connected to the LED matrix"""
       try:
          if not self.CONNECTION:
             return False
@@ -76,16 +78,18 @@ class MatrixConnector:
       except AttributeError: return False
      
    def connect(self, port: str|None = None):
+      """Connect to the LED matrix given a port"""
       self.CONNECTION = serial.Serial(
            port if port != None else self.PORT,
            self.BAUD_RATE
       )
     
    def close(self):
+      """Disconnect from the LED matrix"""
       self.CONNECTION.close()
 
-   def send_command(self, command_id, parameters, length: int = 32) -> None:
-
+   def send_command(self, command_id, parameters) -> None:
+      """Send a particular command to the LED matrix"""
       succeeded = False
       while not succeeded:
          try: 
@@ -95,7 +99,7 @@ class MatrixConnector:
             print("Failed to write")
    
    def send_command_with_response(self, command_id, parameters, length: int|None = 32) -> bytes:
-
+      """Send a particular command to the LED matrix and read a response from the matrix"""
       succeeded = False
       while not succeeded:
          try: 
@@ -113,16 +117,16 @@ class MatrixConnector:
       return b''
     
    def eval_boolean_returned(self, command_response: bytes) -> bool:
+      """Convert a command response to a boolean value"""
       return bool(command_response[0])
     
-   """
-   Set the LED Matrix overall brightness, from 0 to 255
-   """
    def set_brightness(self, brightness: int):
+      """Set the LED matrix's overall brightness, from 0 to 255"""
       assert 0 <= brightness <= 255
       self.send_command(COMMANDS["brightness"], [brightness])
 
    def set_pattern(self, pattern: bytes, percentage: int = 100):
+      """Set the pattern displayed on the LED matrix"""
       assert (
          pattern != PATTERNS["percentage"] and percentage == None or
          pattern == PATTERNS["percentage"] and 0 <= percentage <= 100
@@ -132,48 +136,57 @@ class MatrixConnector:
       self.send_command(COMMANDS["pattern"], args)
 
    def bootloader(self):
+      """Place the LED matrix into bootloader mode, for flashing a new image"""
       self.send_command(COMMANDS["bootloader"], [])
 
    def set_sleep(self, asleep: bool = False):
+      """Set the matrix to either be sleeping or not"""
       self.send_command(COMMANDS["sleep"], [asleep])
    
-   """
-   Get whether the LED Matrix is sleeping. This seems to have freaky behavior, don't use it probably.
-   """
    def get_sleep(self) -> bool:
+      """Get whether the LED Matrix is sleeping. This seems to have freaky behavior, so ideally refrain from using it."""
       return self.eval_boolean_returned(self.send_command_with_response(COMMANDS["sleep"], [], True))
    
    def set_is_animating(self, animating: bool):
+      """Set the matrix's animation to either be playing or not"""
       self.send_command(COMMANDS["animate"], [animating])
 
    def get_is_animating(self):
+      """Return whether the matrix is set to play the current animation"""
       return self.eval_boolean_returned(self.send_command_with_response(COMMANDS["animate"], [], True))
    
    def panic(self):
+      """Raise an LED matrix firmware panic for debug purposes"""
       self.send_command(COMMANDS["panic"], [])
    
    def draw_bw_image(self, image: list[bytes]):
+      """Draw a given black and white image to the matrix"""
       self.send_command(COMMANDS["drawbw"], image)
 
    def stage_column(self, column: int, values: list[int]):
+      """Blit a column of values to the LED matrix. This will display nothing until the columns are flushed with flush_columns"""
       args = [column]
       args.extend(values)
       self.send_command(COMMANDS["stagecol"], args)
 
    def flush_columns(self):
+      """Flush all of the columns blitted with stage_column"""
       self.send_command(COMMANDS["flushcols"], [])
 
    def start_game(self, game: int):
-      
+      """Start a game with a given ID"""
       self.send_command(COMMANDS["startgame"], [game])
 
    def send_game_command(self, command: int):
+      """Send a command to the currently running game"""
       self.send_command(COMMANDS["gamecontrol"], [command])
 
    def get_game_status(self):
+      """Get the status of the currently running game"""
       return self.send_command_with_response(COMMANDS["gamestatus"], [], None)
    
    def decode_game_status(self, status: bytes):
+      """Decode the value returned from get_game_status"""
       status_str = status.decode("ascii").splitlines()
       status_str.reverse()
 
@@ -184,7 +197,6 @@ class MatrixConnector:
          if "step" in message:
             current_game = message.replace(" Game step", "").lower()
          else:
-            print(message)
             message_segments = message.split(" ")
             game_state = {}
             i = 0
@@ -197,23 +209,23 @@ class MatrixConnector:
       return current_game, game_state
    
    def get_fw_version(self):
+      """Get the LED matrix firmware version"""
       return self.send_command(COMMANDS["version"], [], True)
    
    def _stage_matrix_column(self, column):
+      """Blit a column from the internal matrix representation to the actual matrix"""
       self.stage_column(column, self.matrix.get_column_values(column))
 
    def _stage_whole_matrix(self):
+      """Blit all columns from the internal matrix representation to the actual matrix"""
       for column in range(0, 9):
          self._stage_matrix_column(column)
    
    def flush_matrix(self):
-      #self.matrix.log_state()
+      """Flush every column on the LED matrix"""
       self._stage_whole_matrix()
       self.flush_columns()
    
-
-# Go to sleep and check the status
 if __name__ == "__main__":
+   # Create a basic matrix connector instance
    matrix = MatrixConnector(Matrix())
-
-      

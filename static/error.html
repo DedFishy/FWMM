@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Error!</title>
+        <link rel="stylesheet" href="/style.css">
+        <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    </head>
+    <body id='error'>
+        <h1>Couldn't connect to LED matrix</h1>
+        <h2>[error]</h2>
+        <button onclick='fetch("/stop"); document.body.innerHTML = "<h1>FWMM has shut down.</h1>"'>Got it</button>
+    </body>
+</html>

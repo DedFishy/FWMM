@@ -1,6 +1,7 @@
 from enum import Enum
 
 class ConfigItemType(Enum):
+    """Represents types of configuration items"""
     text = 0
     integer = 1
     #float = 2
@@ -10,6 +11,7 @@ class ConfigItemType(Enum):
     combo = 6
 
 class WidgetConfigItem:
+    """Represents a configuration item for a widget"""
     value = None
 
     config_item_type: ConfigItemType = ConfigItemType.integer
@@ -26,6 +28,7 @@ class WidgetConfigItem:
         self.options = options
     
     def serialize(self):
+        """Create a JSON version of this config item to send to the frontend"""
         return {
             "value": self.value,
             "item_type": self.config_item_type.value,
@@ -34,8 +37,8 @@ class WidgetConfigItem:
             "options": self.options
         }
     
-    # For updating values based on what the frontend returns (which is encoded as a string by default)
     def update_value(self, new_value):
+        """For updating values based on what the frontend returns (which is encoded as a string)"""
         if self.config_item_type == ConfigItemType.text: self.value = str(new_value)
         elif self.config_item_type == ConfigItemType.integer: self.value = int(new_value)
         #elif self.config_item_type == ConfigItemType.float: self.value = float(new_value)

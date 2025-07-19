@@ -1,1 +1,0 @@
-{"widgets": [{"position": [0, 0], "rotation": 90, "color": [190, 77, 123, 255], "import_name": "bar", "configuration": {"Width": 34, "Height": 9, "Border Thickness": 1, "Border Brightness": 255, "Brightness": 255, "Time Between Updates (sec)": 0, "Fill Source": "CPU Usage"}}]}
