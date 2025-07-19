@@ -368,6 +368,7 @@ async def matrix_update_loop():
                 matrix_connector.flush_matrix()
                 spf = layout_manager.get_desired_spf()
             except Exception as e:
+                raise e
                 print("Failed to write to serial:", e)
 
 def main():
