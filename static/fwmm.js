@@ -29,13 +29,13 @@ async function fetchInitial() {
 }
 async function constructAvailableWidgetList(available) {
     availableWidgetList.innerHTML = "";
-    available.forEach((value, index, array) => {
+    Object.keys(available).forEach((value, index, array) => {
         const widgetElement = document.createElement("div");
         widgetElement.className = "available-widget";
         widgetElement.innerText = value;
         widgetElement.draggable = true;
         widgetElement.widgetName = value;
-        widgetElement.ondragstart = (event) => {event.dataTransfer.setData("widgetName", value);}
+        widgetElement.ondragstart = (event) => {event.dataTransfer.setData("widgetName", available[value]);}
         availableWidgetList.appendChild(widgetElement);
     })
 }

@@ -20,3 +20,5 @@ class WidgetManager:
                     self.widgets[name].import_name = name
                 except ImportError as e:
                     self.errors[name] = str(e)
+        
+

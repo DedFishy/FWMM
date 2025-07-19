@@ -74,7 +74,7 @@ def construct_full_update():
                 "index": layout_manager.widgets.index(widget),
                 "can_rotate": widget.widget.allow_rotation,
                 } for widget in layout_manager.widgets],
-        "available": list(widget_manager.widgets.keys()),
+        "available": {widget.name: widget.import_name for widget in widget_manager.widgets.values()},
         "notifications": queued_notifications.copy()
     }
     queued_notifications = []

@@ -1,4 +1,5 @@
 from datetime import datetime
+from text_based_widget import TextBasedWidget
 import util
 from widget import Widget as WidgetBase
 from widget_config_item import WidgetConfigItem as Config
@@ -7,61 +8,28 @@ from const import WIDTH, HEIGHT
 import numpy as np
 from font_loader import load_preloaded_font, get_fonts
 
-
-class Widget(WidgetBase):
+class Widget(TextBasedWidget):
     name = "Clock"
-    allow_rotation = True
-    current_render: np.matrix = np.matrix([[]])
-    rotation = 0
-    font = None
-    loaded_font_name = None
 
     def __init__(self):
         super().__init__()
         self.configuration = {
             "Brightness": Config(ConfigType.integer, 255, 0, 255),
-            "Twelve Hour": Config(ConfigType.boolean, False),
-            "Font": Config(ConfigType.combo, "Medium", options=get_fonts())
+            "Font": Config(ConfigType.combo, get_fonts()[0], options=get_fonts()),
+            "Digit Spacing": Config(ConfigType.integer, 1, 0, 10),
+            "Twelve Hour": Config(ConfigType.boolean, True)
         }
-
-    def get_current_size(self):
-        return [self.current_render.shape[1], self.current_render.shape[0]]
     
     def get_desired_spf(self):
         return 30
+    def get_brightness(self):
+        return self.configuration["Brightness"].value
+    def get_font(self):
+        return self.configuration["Font"].value
+    def get_spacing(self):
+        return self.configuration["Digit Spacing"].value
     
-    def append_character(self, matrix: np.matrix, character: np.matrix, spacing=1):
-        spacer = [
-            [0 for _ in range(0, spacing)] for _ in range(0, matrix.shape[0])
-        ]
-        matrix = np.concatenate((matrix, np.matrix(spacer)), axis=1) # type: ignore
-        matrix = np.concatenate((matrix, character), axis=1) # type: ignore
-        return matrix
-    
-    def render(self, digit_one, digit_two, digit_three, digit_four):
-        if self.font == None or self.loaded_font_name != self.configuration["Font"].value:
-            self.loaded_font_name = self.configuration["Font"].value
-            self.font = load_preloaded_font(self.loaded_font_name)
-        rows = np.matrix([
-            [] for _ in range(0, self.font.get_char_height())
-        ])
-        rows = self.append_character(rows, self.font[digit_one], spacing=0)
-        rows = self.append_character(rows, self.font[digit_two])
-        rows = self.append_character(rows, self.font[":"])
-        rows = self.append_character(rows, self.font[digit_three])
-        rows = self.append_character(rows, self.font[digit_four])
-        for y in range(0, len(rows)):
-            for x in range(0, len(rows[y])):
-                rows[y][x] *= self.configuration["Brightness"].value
-        self.current_render = rows
-        return rows
-
-    def twentyfour_to_twelve(self, hour):
-        if hour / 12 > 1:
-            return hour - 12
-        return hour
-
-    def get_frame(self):
+    def get_text(self):
         digit_one = 0
         digit_two = 0
         digit_three = 0
@@ -81,4 +49,9 @@ class Widget(WidgetBase):
         else: 
             digit_three = minute[0]
             digit_four = minute[1]
-        return self.render(digit_one, digit_two, digit_three, digit_four)
+        return f"{digit_one}{digit_two}:{digit_three}{digit_four}"
+
+    def twentyfour_to_twelve(self, hour):
+        if hour / 12 > 1:
+            return hour - 12
+        return hour
