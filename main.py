@@ -16,9 +16,10 @@ from aiohttp import web
 import webbrowser
 import os
 import filedialpy
-import font_loader # Recognized by freezer
 import signal
 
+# Recognized by freezer
+import font_loader, text_based_widget
 
 def shutdown():
     signal.raise_signal(signal.SIGTERM)
