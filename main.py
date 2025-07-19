@@ -80,12 +80,22 @@ def construct_full_update():
     queued_notifications = []
     return construct_json_response(dictionary)
 
-with open(get_local_path("index.html"), "r+") as index_file:
-    html = index_file.read()
-with open(get_local_path("static/fwmm.js"), "r+") as fwmm_js:
-    js = fwmm_js.read()
-with open(get_local_path("static/style.css"), "r+") as css_file:
-    css = css_file.read()
+if not DEBUG:
+    with open(get_local_path("index.html"), "r+") as index_file:
+        html = index_file.read()
+    with open(get_local_path("static/fwmm.js"), "r+") as fwmm_js:
+        js = fwmm_js.read()
+    with open(get_local_path("static/style.css"), "r+") as css_file:
+        css = css_file.read()
+    with open(get_local_path("font_maker/index.html"), "r+") as font_maker_file:
+        font_maker = font_maker_file.read()
+
+@routes.get("/font_maker")
+async def font_maker(request):
+    if DEBUG:
+        with open(get_local_path("font_maker/index.html"), "r+") as font_maker_file:
+            return web.Response(text=font_maker_file.read(), content_type="text/html")
+    return web.Response(text=font_maker, content_type="text/html")
 
 @routes.get("/")
 async def index_handler(request):
