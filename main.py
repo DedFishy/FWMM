@@ -23,7 +23,7 @@ import signal
 def shutdown():
     signal.raise_signal(signal.SIGTERM)
 
-DEBUG = False
+DEBUG = True
 
 running = True
 

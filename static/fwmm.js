@@ -278,7 +278,12 @@ function constructConfigItem(widgetIndex, name, meta, isTransform) {
     var input;
     var innerInput = undefined;
     switch (meta["item_type"]) {
-        case 1: // Number (TODO: Make this show a range slider as well)
+        case 0: // Text
+            input = document.createElement("input");
+            input.type = "text";
+            input.value = meta["value"];
+            break;
+        case 1: // Integer
             input = document.createElement("input");
             input.type = "number";
             input.value = meta["value"];
@@ -315,7 +320,7 @@ function constructConfigItem(widgetIndex, name, meta, isTransform) {
             container.appendChild(innerInput);
             container.appendChild(incDecContainer);
             break;
-        case 5:
+        case 5: // Boolean
             input = document.createElement("input");
             input.type = "checkbox";
             input.value = meta["value"];

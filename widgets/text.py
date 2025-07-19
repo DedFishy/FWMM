@@ -9,7 +9,7 @@ from font_loader import load_preloaded_font, get_fonts
 
 
 class Widget(WidgetBase):
-    name = "Yourself"
+    name = "Text"
     allow_rotation = True
     current_render: np.matrix = np.matrix([[]])
     rotation = 0
@@ -20,7 +20,10 @@ class Widget(WidgetBase):
         super().__init__()
         self.configuration = {
             "Brightness": Config(ConfigType.integer, 255, 0, 255),
-            "Font": Config(ConfigType.combo, "Medium", options=get_fonts())
+            "Font": Config(ConfigType.combo, "Medium", options=get_fonts()),
+            "Text": Config(ConfigType.text, "Text"),
+            "Letter Spacing": Config(ConfigType.integer, 1, 0, 10),
+
         }
 
     def get_current_size(self):
@@ -44,9 +47,11 @@ class Widget(WidgetBase):
         rows = np.matrix([
             [] for _ in range(0, self.font.get_char_height())
         ])
-        rows = self.append_character(rows, self.font["k"], spacing=1)
-        rows = self.append_character(rows, self.font["y"], spacing=1)
-        rows = self.append_character(rows, self.font["s"], spacing=1)
+        print("Rendering text:", self.configuration["Text"].value)
+        i = 0
+        for char in self.configuration["Text"].value:
+            rows = self.append_character(rows, self.font[char.lower()], spacing= 0 if i == 0 else self.configuration["Letter Spacing"].value)
+            i += 1
         
         for y in range(0, len(rows)):
             for x in range(0, len(rows[y])):
