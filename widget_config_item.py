@@ -41,5 +41,5 @@ class WidgetConfigItem:
         #elif self.config_item_type == ConfigItemType.float: self.value = float(new_value)
         #elif self.config_item_type == ConfigItemType.integer_list: self.value = [int(x) for x in list(new_value)]
         #elif self.config_item_type == ConfigItemType.float_list: self.value = [float(x) for x in list(new_value)]
-        elif self.config_item_type == ConfigItemType.boolean: self.value = bool(new_value)
+        elif self.config_item_type == ConfigItemType.boolean: self.value = new_value == "true"
         elif self.config_item_type == ConfigItemType.combo: self.value = str(new_value)

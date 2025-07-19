@@ -354,7 +354,11 @@ function constructConfigItem(widgetIndex, name, meta, isTransform) {
             }
         }
         if (innerInput) {innerInput.value = input.value}
-        if (!isTransform) sendConfigUpdate(widgetIndex, name, input.value);
+        if (!isTransform) {
+            if (meta["item_type"] == 5) sendConfigUpdate(widgetIndex, name, input.checked);
+            else sendConfigUpdate(widgetIndex, name, input.value);
+        
+        }
         else sendTransformUpdate(widgetIndex, name, input.value);
     }
     container.appendChild(input);
