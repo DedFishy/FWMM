@@ -15,6 +15,9 @@
                 margin: 0;
                 width: 100vw;
             }
+            h1 {
+                font-size: 1em;
+            }
             #controls {
                 display: flex;
                 flex-direction: row;
@@ -40,10 +43,12 @@
             #designer .row {
                 display: flex;
                 flex-direction: row;
+
             }
             #characters {
                 display: flex;
                 flex-direction: row;
+                align-items: center;
                 
             }
             #character-list {
@@ -58,30 +63,21 @@
 
     <body ondrop="importJSON(event)" ondragover="event.preventDefault()">
         <div id="controls">
-            <button onclick="exportJSON()">export</button>
-            <button onclick="makeNew()">make new</button>
-            <input type="text" id="new-width" placeholder="width">
-            x
-            <input type="text" id="new-height" placeholder="height">
-            <input type="text" id="file-name" placeholder="name">
+            <h1>Font Maker</h1>
+            <button onclick="exportJSON()">Export Font</button>
+            <button onclick="makeNew()">Create New Font</button>
             <div id="file-name-display"></div>
         </div>
         <div id="designer">
 
         </div>
         <div id="characters">
-            <input type="text" id="character-name" placeholder="character name">
-            <button onclick="newCharacter()">new</button>
-            <button onclick="delCharacter()">delete</button>
-            <div>characters:</div>
+            <button onclick="newCharacter()">New Char</button>
+            <button onclick="delCharacter()">Delete Current Char</button>
             <div id="character-list"></div>
         </div>
 
         <script type="text/javascript">
-            var widthInput = document.getElementById("new-width");
-            var heightInput = document.getElementById("new-height");
-            var nameInput = document.getElementById("file-name")
-            var charInput = document.getElementById('character-name');
 
             var designerElement = document.getElementById("designer");
             var characterListElement = document.getElementById("character-list");
@@ -105,6 +101,7 @@
                 element.click();
 
                 document.body.removeChild(element);
+                alert("To use this font, drop it in FWMM's 'fonts' folder.");
             }
 
             function importJSON(ev) {
@@ -191,17 +188,17 @@
 
             function makeNew() {
                 currentFont = {};
-                currentFontName = nameInput.value;
-                currentFontWidth = widthInput.value;
-                currentFontHeight  = heightInput.value;
-                fileNameElement.innerText = "current font: " + currentFontName;
+                currentFontName = prompt("Name of new font?");
+                currentFontWidth = prompt("Font width?");
+                currentFontHeight  = prompt("Font height?");
+                fileNameElement.innerText = "Current font: " + currentFontName;
                 characterListElement.innerHTML = "";
             }
 
             function openCharacter(character) {
                 saveCurrentCharacter();
                 currentCharacter = character;
-                generateGrid(widthInput.value, heightInput.value, currentFont[character]);
+                generateGrid(currentFontWidth, currentFontHeight, currentFont[character]);
             }
 
             function makeCharButton(character) {
@@ -217,8 +214,7 @@
             function newCharacter() {
 
                 saveCurrentCharacter();
-                currentCharacter = charInput.value;
-                charInput.value = "";
+                currentCharacter = prompt("Which Character?");
                 if (Object.keys(currentFont).includes(currentCharacter)) {
                     return;
                 }
