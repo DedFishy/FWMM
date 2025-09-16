@@ -97,20 +97,20 @@ def construct_full_update() -> web.Response:
 
 # Load the frontend files only once if debug mode is off
 if not DEBUG:
-    with open(get_local_path("index.html"), "r+") as index_file:
+    with open(get_local_path("index.html"), "r") as index_file:
         html = index_file.read()
-    with open(get_local_path("static/fwmm.js"), "r+") as fwmm_js:
+    with open(get_local_path("static/fwmm.js"), "r") as fwmm_js:
         js = fwmm_js.read()
-    with open(get_local_path("static/style.css"), "r+") as css_file:
+    with open(get_local_path("static/style.css"), "r") as css_file:
         css = css_file.read()
-    with open(get_local_path("font_maker/index.html"), "r+") as font_maker_file:
+    with open(get_local_path("font_maker/index.html"), "r") as font_maker_file:
         font_maker = font_maker_file.read()
 
 # Allows access to the font maker, an HTML document that helps with creating JSON formatted pixel fonts
 @routes.get("/font_maker")
 async def font_maker(_) -> web.Response:
     if DEBUG:
-        with open(get_local_path("font_maker/index.html"), "r+") as font_maker_file:
+        with open(get_local_path("font_maker/index.html"), "r") as font_maker_file:
             return web.Response(text=font_maker_file.read(), content_type="text/html")
     return web.Response(text=font_maker, content_type="text/html")
 
@@ -122,10 +122,10 @@ async def index_handler(_) -> web.Response:
         error = str(error)
         if "[Errno 13]" in error:
             error = "Permission to access your matrix was denied. Please run 'sudo chmod 666 " + error.split(" ")[-1].replace("'", "") + "' to allow FWMM to connect to your input module."
-        with open(get_local_path("static/error.html"), "r+") as error_doc:
+        with open(get_local_path("static/error.html"), "r") as error_doc:
             return web.Response(body=error_doc.read().replace("[error]", error_doc), content_type="text/html")
     if DEBUG:
-        with open(get_local_path("index.html"), "r+") as index_file:
+        with open(get_local_path("index.html"), "r") as index_file:
             return web.Response(text=index_file.read(), content_type="text/html")
     return web.Response(text=html, content_type="text/html")
 
@@ -133,7 +133,7 @@ async def index_handler(_) -> web.Response:
 @routes.get("/fwmm.js")
 async def js_handler(_) -> web.Response:
     if DEBUG:
-        with open(get_local_path("static/fwmm.js"), "r+") as fwmm_js:
+        with open(get_local_path("static/fwmm.js"), "r") as fwmm_js:
             return web.Response(text=fwmm_js.read(), content_type="text/javascript")
     return web.Response(text=js, content_type="text/javascript")
 
@@ -142,7 +142,7 @@ async def js_handler(_) -> web.Response:
 async def css_handler(_) -> web.Response:
     global css
     if DEBUG:
-        with open(get_local_path("static/style.css"), "r+") as css:
+        with open(get_local_path("static/style.css"), "r") as css:
             return web.Response(text=css.read(), content_type="text/css")
     return web.Response(text=css, content_type="text/css")
     
