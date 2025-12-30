@@ -9,6 +9,7 @@ class Widget:
     rotation = 0 # Must be 0 or multiple of 90
     import_name = "Unnamed"
     allow_rotation = True
+    color = (0,0,0)
 
     configuration: dict[str, WidgetConfigItem] = {}
 

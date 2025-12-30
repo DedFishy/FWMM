@@ -97,20 +97,20 @@ def construct_full_update() -> web.Response:
 
 # Load the frontend files only once if debug mode is off
 if not DEBUG:
-    with open(get_local_path("index.html"), "r") as index_file:
+    with open(get_local_path("index.html"), "r", encoding="utf-8") as index_file:
         html = index_file.read()
-    with open(get_local_path("static/fwmm.js"), "r") as fwmm_js:
+    with open(get_local_path("static/fwmm.js"), "r", encoding="utf-8") as fwmm_js:
         js = fwmm_js.read()
-    with open(get_local_path("static/style.css"), "r") as css_file:
+    with open(get_local_path("static/style.css"), "r", encoding="utf-8") as css_file:
         css = css_file.read()
-    with open(get_local_path("font_maker/index.html"), "r") as font_maker_file:
+    with open(get_local_path("font_maker/index.html"), "r", encoding="utf-8") as font_maker_file:
         font_maker = font_maker_file.read()
 
 # Allows access to the font maker, an HTML document that helps with creating JSON formatted pixel fonts
 @routes.get("/font_maker")
-async def font_maker(_) -> web.Response:
+async def font_maker_page(_) -> web.Response:
     if DEBUG:
-        with open(get_local_path("font_maker/index.html"), "r") as font_maker_file:
+        with open(get_local_path("font_maker/index.html"), "r", encoding="utf-8") as font_maker_file:
             return web.Response(text=font_maker_file.read(), content_type="text/html")
     return web.Response(text=font_maker, content_type="text/html")
 
@@ -122,10 +122,10 @@ async def index_handler(_) -> web.Response:
         error = str(error)
         if "[Errno 13]" in error:
             error = "Permission to access your matrix was denied. Please run 'sudo chmod 666 " + error.split(" ")[-1].replace("'", "") + "' to allow FWMM to connect to your input module."
-        with open(get_local_path("static/error.html"), "r") as error_doc:
-            return web.Response(body=error_doc.read().replace("[error]", error_doc), content_type="text/html")
+        with open(get_local_path("static/error.html"), "r", encoding="utf-8") as error_doc:
+            return web.Response(body=error_doc.read().replace("[error]", error), content_type="text/html")
     if DEBUG:
-        with open(get_local_path("index.html"), "r") as index_file:
+        with open(get_local_path("index.html"), "r", encoding="utf-8") as index_file:
             return web.Response(text=index_file.read(), content_type="text/html")
     return web.Response(text=html, content_type="text/html")
 
@@ -133,7 +133,7 @@ async def index_handler(_) -> web.Response:
 @routes.get("/fwmm.js")
 async def js_handler(_) -> web.Response:
     if DEBUG:
-        with open(get_local_path("static/fwmm.js"), "r") as fwmm_js:
+        with open(get_local_path("static/fwmm.js"), "r", encoding="utf-8") as fwmm_js:
             return web.Response(text=fwmm_js.read(), content_type="text/javascript")
     return web.Response(text=js, content_type="text/javascript")
 
@@ -142,7 +142,7 @@ async def js_handler(_) -> web.Response:
 async def css_handler(_) -> web.Response:
     global css
     if DEBUG:
-        with open(get_local_path("static/style.css"), "r") as css:
+        with open(get_local_path("static/style.css"), "r", encoding="utf-8") as css:
             return web.Response(text=css.read(), content_type="text/css")
     return web.Response(text=css, content_type="text/css")
     
@@ -157,8 +157,8 @@ async def available_widgets(_) -> web.Response:
 @routes.get("/createwidget/{widget}")
 async def widget_meta(request: web.Request) -> web.Response:
     widget_name = request.match_info.get("widget", None)
-    widget: Widget = widget_manager.widgets[widget_name]()
-    widget.color = (random.randint(0, 255) for _ in range(3))
+    widget: Widget = widget_manager.widgets[widget_name]() # type: ignore
+    widget.color = (random.randint(0, 255) for _ in range(3)) # type: ignore
 
     layout_manager.add_widget(widget)
 
@@ -174,7 +174,7 @@ async def update_widget_config(request: web.Request) -> web.Response:
     name = request.match_info.get("name", None)
     new_value = request.match_info.get("new_value", None)
 
-    layout_manager.widgets[int(widget_index)].widget.configuration[name].update_value(new_value)
+    layout_manager.widgets[int(widget_index)].widget.configuration[name].update_value(new_value) # type: ignore
 
     layout_manager.render()
     matrix_connector.flush_matrix()
@@ -230,7 +230,7 @@ async def save_layout(_) -> web.Response:
     if file:
         layout_manager.selected_layout_file_path = file
         layout_manager.selected_layout_file_name = file.split("/")[-1]
-        with open(layout_manager.selected_layout_file_path, "w+") as file:
+        with open(layout_manager.selected_layout_file_path, "w+", encoding="utf-8") as file:
             file.write(json.dumps(layout_manager.generate_layout_dict()))
     return construct_json_response({})
 
@@ -323,7 +323,7 @@ def load_layout_path(file: str):
     """Load a layout from a path"""
     layout_manager.selected_layout_file_path = file
     layout_manager.selected_layout_file_name = file.split("/")[-1]
-    with open(layout_manager.selected_layout_file_path) as file_read:
+    with open(layout_manager.selected_layout_file_path, encoding="utf-8") as file_read:
         layout = json.loads(file_read.read())
         layout_manager.remove_all()
         for widget in layout["widgets"]:
