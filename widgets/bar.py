@@ -6,8 +6,6 @@ from const import WIDTH, HEIGHT
 import psutil
 import numpy as np
 
-battery = psutil.sensors_battery()
-
 class Widget(WidgetBase):
     name = "Bar"
     desired_spf = -1
@@ -15,7 +13,7 @@ class Widget(WidgetBase):
 
     fill_sources = {
         "None": lambda w: 0,
-        "Battery": lambda w: battery.percent/100,
+        "Battery": lambda w: psutil.sensors_battery().percent/100,
         "CPU Usage": lambda w: psutil.cpu_percent(0)/100,
         "RAM Usage": lambda w: psutil.virtual_memory().percent/100
     }
