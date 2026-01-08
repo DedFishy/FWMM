@@ -4,14 +4,12 @@ from widget_config_item import ConfigItemType as ConfigType
 from font_loader import get_fonts
 import psutil
 
-battery = psutil.sensors_battery()
-
 class Widget(TextBasedWidget):
     name = "Percentage"
 
     percentage_sources = {
         "None": lambda w: 0,
-        "Battery": lambda w: battery.percent,
+        "Battery": lambda w: psutil.sensors_battery().percent,
         "CPU Usage": lambda w: psutil.cpu_percent(0),
         "RAM Usage": lambda w: psutil.virtual_memory().percent
     }
