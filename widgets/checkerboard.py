@@ -46,6 +46,6 @@ class Widget(WidgetBase):
         xoff = self.configuration["X Offset"].value + int(xspeed * delta_time) % (size << 1)
         yoff = self.configuration["Y Offset"].value + int(yspeed * delta_time) % (size << 1)
 
-        base = np.matrix([[ self.configuration["Brightness 1"].value if ( (((x - xoff) // size) % 2) + (((y - yoff) // size) % 2) != 1 ) else self.configuration["Brightness 2"].value for x in range(width)] for y in range(height)]) # type: ignore
+        base = np.matrix([[ self.configuration["Brightness 1"].value if ( (((x - xoff) // size) & 1) + (((y - yoff) // size) & 1) != 1 ) else self.configuration["Brightness 2"].value for x in range(width)] for y in range(height)]) # type: ignore
 
         return base
