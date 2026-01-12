@@ -20,8 +20,8 @@ class Widget(WidgetBase):
             "Brightness 1": Config(ConfigType.integer, 255, 0, 255),
             "Brightness 2": Config(ConfigType.integer, 0, 0, 255),
             "Board Size": Config(ConfigType.integer, 1, 1, WIDTH),
-            "X Offset": Config(ConfigType.integer, 0, 0, WIDTH),
-            "Y Offset": Config(ConfigType.integer, 0, 0, HEIGHT),
+            "X Offset": Config(ConfigType.integer, 0, -10, WIDTH),
+            "Y Offset": Config(ConfigType.integer, 0, -10, HEIGHT),
             "Time Between Updates (sec)": Config(ConfigType.integer, -1, -1, 30),
             "X Speed (px per s)": Config(ConfigType.integer, 0, -10, 10),
             "Y Speed (px per s)": Config(ConfigType.integer, 0, -10, 10)
@@ -43,9 +43,9 @@ class Widget(WidgetBase):
 
         delta_time = float(datetime.now().timestamp() - self.start_time)
 
-        xoff = self.configuration["X Offset"].value - int(xspeed * delta_time) % (size << 1)
-        yoff = self.configuration["Y Offset"].value - int(yspeed * delta_time) % (size << 1)
+        xoff = self.configuration["X Offset"].value + int(xspeed * delta_time) % (size << 1)
+        yoff = self.configuration["Y Offset"].value + int(yspeed * delta_time) % (size << 1)
 
-        base = np.matrix([[ self.configuration["Brightness 1"].value if ( (((x + xoff) // size) % 2) + (((y + yoff) // size) % 2) != 1 ) else self.configuration["Brightness 2"].value for x in range(width)] for y in range(height)]) # type: ignore
+        base = np.matrix([[ self.configuration["Brightness 1"].value if ( (((x - xoff) // size) % 2) + (((y - yoff) // size) % 2) != 1 ) else self.configuration["Brightness 2"].value for x in range(width)] for y in range(height)]) # type: ignore
 
         return base
